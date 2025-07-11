@@ -1,12 +1,11 @@
 import './App.css'
+import { Home } from './pages/home/Home'
 
-function App() {
-
+export function App() {
   return (
     <div className='app-container'>
-      <h1>Welcome to SkyReady Application</h1>
+      <Home/>
     </div>
   )
 }
 
-export default App
