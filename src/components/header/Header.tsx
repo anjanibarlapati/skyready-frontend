@@ -1,6 +1,6 @@
+import './Header.css'
 export const Header = () => {
   return (
-    <div>
       <header className="header">
         <div className="header-container">
           <div className="logo-group">
@@ -16,6 +16,5 @@ export const Header = () => {
           </nav>
         </div>
       </header>
-    </div>
   );
 };
