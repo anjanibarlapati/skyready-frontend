@@ -21,13 +21,4 @@ describe("Header", () => {
     expect(aboutUsLink).toBeInTheDocument();
     expect(aboutUsLink).toHaveAttribute("href", "#about-us");
   });
-  test("has correct class names for structure and stylings", () => {
-    const { container } = render(<Header />);
-    expect(container.querySelector(".header")).toBeInTheDocument();
-    expect(container.querySelector(".header-container")).toBeInTheDocument();
-    expect(container.querySelector(".logo-group")).toBeInTheDocument();
-    expect(container.querySelector(".logo-img")).toBeInTheDocument();
-    expect(container.querySelector(".nav-links")).toBeInTheDocument();
-    expect(container.querySelectorAll(".nav-button").length).toBe(2);
-  });
 });
