@@ -26,7 +26,7 @@
 }
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   flex-wrap: wrap;
   margin-left: auto;
 }
@@ -47,23 +47,25 @@
 }
 @media (max-width: 768px) {
   .header-container {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 2rem;
   }
 
   .nav-links {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    margin-top: 0.75rem;
-    gap: 0.5rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .nav-button {
-    width: 15%;
-    text-align: left;
+    width: auto;
+    text-align: center;
     font-size: 1rem;
-    padding: 0.6rem 1.4rem;
+    padding: 0.4rem 1.4rem;
   }
 }
