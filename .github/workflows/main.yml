@@ -2,9 +2,9 @@ name: Frontend CI Pipeline
 
 on:
   pull_request:
-    push:
-      branches: 
-        - main
+  push:
+    branches: 
+      - main
 
 jobs:
     test-and-build:
