@@ -20,7 +20,7 @@ describe("Header", () => {
     expect(aboutUsLink).toBeInTheDocument();
     expect(aboutUsLink).toHaveAttribute("href", "#about-us");
   });
-  test("has correct class names for structure and styling", () => {
+  test("has correct class names for structure and stylings", () => {
     const { container } = render(<Header />);
     expect(container.querySelector(".header")).toBeInTheDocument();
     expect(container.querySelector(".header-container")).toBeInTheDocument();
