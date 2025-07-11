@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react'
-import App from './App'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, test } from 'vitest'
+import { App } from './App'
 
 describe('App', () => {
-  test('renders welcome message', () => {
+  test('renders home footer', () => {
     render(<App />)
-    expect(screen.getByText(/Welcome to SkyReady/i)).toBeInTheDocument();
+    expect(screen.getByText(/© 2025 SkyReady. All rights reserved. ✈️/i)).toBeTruthy();
   })
 })
