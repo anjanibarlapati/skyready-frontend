@@ -1,4 +1,7 @@
 .home-container {
-  display: flex;        
-  justify-content: center;  
+  display: flex; 
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;  
+  padding: 70px 0px;
 }

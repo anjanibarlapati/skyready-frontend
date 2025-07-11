@@ -1,11 +1,10 @@
-import { Footer } from "../../components/footer/Footer"
-import { Header } from "../../components/header/Header"
+import { AboutUs } from "../../components/AboutUs/AboutUs"
 import "./Home.css"
+
 export const Home = () => {
   return (
-    <div className="home-container">
-      <Header/>
-      <Footer/>
+    <div className="home-container" data-testid="home">
+      <AboutUs/>
     </div>
   )
 }
