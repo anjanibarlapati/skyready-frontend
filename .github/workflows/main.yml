@@ -5,6 +5,7 @@ on:
   push:
     branches: 
       - main
+      - feature/header
 
 jobs:
     test-and-build:
