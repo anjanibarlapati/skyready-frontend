@@ -21,15 +21,14 @@
 }
 
 .logo-img {
-  height: 0px;
+  height: 70px;
   width: auto;
 }
 .nav-links {
   display: flex;
-  gap: 5rem;
+  gap: 2rem;
   flex-wrap: wrap;
   margin-left: auto;
-  margin-right: 20rem;
 }
 
 .nav-button {
