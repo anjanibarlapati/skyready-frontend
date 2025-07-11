@@ -5,6 +5,6 @@ import { describe, test, expect } from 'vitest'
 describe('Home', () => {
   test('renders footer in home', () => {
     render(<Home />)
-    expect(screen.getByText(/© 2025 SkyReady. All rights reserved. ✈️/i)).toBeTruthy();
+    expect(screen.getByText(/© 2025 SkyReady. All rights reserved. ✈️/i)).toBeInTheDocument();
   })
 })
