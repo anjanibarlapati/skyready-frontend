@@ -9,5 +9,15 @@ describe('Header', () => {
     expect(logo).toBeInTheDocument();
     expect(logo).toHaveAttribute('src', '/logo.png');
   });
+ test('renders the navigation links', () => {
+    render(<Header />);
+    const homeLink = screen.getByRole('link', { name: /home/i });
+    const aboutUsLink = screen.getByRole('link', { name: /about us/i });
 
+    expect(homeLink).toBeInTheDocument();
+    expect(homeLink).toHaveAttribute('href', '/');
+
+    expect(aboutUsLink).toBeInTheDocument();
+    expect(aboutUsLink).toHaveAttribute('href', '#about-us');
+  });
 })
