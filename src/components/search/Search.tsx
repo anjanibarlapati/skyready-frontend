@@ -9,7 +9,7 @@ export const Search = () => {
     new Date().toISOString().split("T")[0]
   );
   const [travellersCount, setTravellersCount] = useState(1);
-  const [classType, setClassType] = useState("Economic");
+  const [classType, setClassType] = useState("Economy");
   const [error, setError] = useState("");
   const [cities, setCities] = useState([]);
   useEffect(() => {
@@ -151,8 +151,9 @@ export const Search = () => {
                 name="class_type"
                 placeholder="Select class type"
                 value={classType}
-                options={["Economic", "Second Class", "First Class"]}
+                options={["Economy", "Second Class", "First Class"]}
                 onChange={setClassType}
+                disableFilter={true}
               />
             </div>
 
