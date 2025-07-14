@@ -45,32 +45,28 @@ export const Search = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const matchedSource = cities.find(
-      (city: string) => city.toLowerCase() === source.toLowerCase()
-    );
-    const matchedDestination = cities.find(
-      (city: string) => city.toLowerCase() === destination.toLowerCase()
-    );
+  const matchedSource = cities.find(
+    (city: string) => city.toLowerCase() === source.toLowerCase()
+  );
+  const matchedDestination = cities.find(
+    (city: string) => city.toLowerCase() === destination.toLowerCase()
+  );
 
-    if (!source || !destination) {
-      setError("Please select both source and destination.");
-      return;
-    }
+  if (!matchedSource || !matchedDestination) {
+    setError("Please select valid cities from dropdown.");
+    return;
+  }
 
-    if (!matchedSource || !matchedDestination) {
-      setError("Please select valid cities from dropdown.");
-      return;
-    }
+  if (matchedSource === matchedDestination) {
+    setError("Source and destination cannot be the same.");
+    return;
+  }
 
-    if (matchedSource === matchedDestination) {
-      setError("Source and destination cannot be the same.");
-      return;
-    }
+  setSource(matchedSource);
+  setDestination(matchedDestination);
+  setError("");
+};
 
-    setSource(matchedSource);
-    setDestination(matchedDestination);
-    setError("");
-  };
   return (
     <div className="search-main-container">
       <form onSubmit={handleSubmit}>
@@ -85,6 +81,7 @@ export const Search = () => {
                 value={source}
                 options={cities}
                 onChange={setSource}
+                required={true}
               />
             </div>
 
@@ -97,6 +94,7 @@ export const Search = () => {
                 value={destination}
                 options={cities}
                 onChange={setDestination}
+                required={true}
               />
             </div>
 
