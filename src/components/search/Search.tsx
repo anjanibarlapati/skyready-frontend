@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
+import {
+  FlightResult,
+  type Flight,
+} from "../../pages/flight_result/FlightResult";
 import "./Search.css";
 
 export const Search = () => {
@@ -9,20 +13,18 @@ export const Search = () => {
     new Date().toISOString().split("T")[0]
   );
   const [travellersCount, setTravellersCount] = useState(1);
-  const [classType, setClassType] = useState("Economy");
+  const [classType, setClassType] = useState("Economic");
   const [error, setError] = useState("");
-  const [cities, setCities] = useState([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   useEffect(() => {
     const fetchCities = async () => {
       try {
         const url = `${import.meta.env.VITE_BASE_URL}/api/v1/cities`;
 
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setCities(data);
@@ -42,14 +44,14 @@ export const Search = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const matchedSource = cities.find(
-      (city: string) => city.toLowerCase() === source.toLowerCase()
+      (city) => city.toLowerCase() === source.toLowerCase()
     );
     const matchedDestination = cities.find(
-      (city: string) => city.toLowerCase() === destination.toLowerCase()
+      (city) => city.toLowerCase() === destination.toLowerCase()
     );
 
     if (!source || !destination) {
@@ -67,10 +69,39 @@ export const Search = () => {
       return;
     }
 
-    setSource(matchedSource);
-    setDestination(matchedDestination);
     setError("");
+    setLoading(true);
+    setFlights([]);
+    setHasSearched(true);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/flights/search`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            source: matchedSource,
+            destination: matchedDestination,
+            departure_date: departureDate,
+            travellers_count: travellersCount,
+            class_type: classType,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      setFlights(data.flights || []);
+    } catch (err) {
+      console.error("Error fetching flights:", err);
+      setError("Something went wrong while fetching flights.");
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div className="search-main-container">
       <form onSubmit={handleSubmit}>
@@ -101,7 +132,7 @@ export const Search = () => {
             </div>
 
             <div className="input-field">
-              <label htmlFor="destination">Departure Date</label>
+              <label htmlFor="departureDate">Departure Date</label>
               <input
                 type="date"
                 id="departureDate"
@@ -151,9 +182,8 @@ export const Search = () => {
                 name="class_type"
                 placeholder="Select class type"
                 value={classType}
-                options={["Economy", "Second Class", "First Class"]}
+                options={["Economic", "Second Class", "First Class"]}
                 onChange={setClassType}
-                disableFilter={true}
               />
             </div>
 
@@ -169,6 +199,23 @@ export const Search = () => {
           <div className="search-error">{error}</div>
         </div>
       </form>
+
+      {loading && <div className="loading">Loading flights...</div>}
+
+      {!loading && flights.length > 0 && (
+        <div className="flight-results-container">
+          <h2 className="flight-results-header">Available Flights</h2>
+          {flights.map((flight, index) => (
+            <FlightResult key={index} flight={flight} />
+          ))}
+        </div>
+      )}
+
+      {!loading && hasSearched && flights.length === 0 && (
+        <div className="flight-results-container">
+          <p> No flights found for the selected route.</p>
+        </div>
+      )}
     </div>
   );
 };
