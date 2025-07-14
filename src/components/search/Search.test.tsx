@@ -175,7 +175,7 @@ describe("Search component", () => {
       fireEvent.change(sourceInput, { target: { value: "Delhi" } });
     });
   });
-  test("changes class type from Economic to First Class", async () => {
+  test("changes class type from Economy to First Class", async () => {
     render(<Search />);
     await waitFor(() => screen.getByLabelText(/Class Type/i));
 
