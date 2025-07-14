@@ -175,7 +175,7 @@ describe("Search component", () => {
       fireEvent.change(sourceInput, { target: { value: "Delhi" } });
     });
   });
-  test("changes class type from Economy to First Class", async () => {
+  test("changes class type from Economic to First Class", async () => {
     render(<Search />);
     await waitFor(() => screen.getByLabelText(/Class Type/i));
 
@@ -183,6 +183,49 @@ describe("Search component", () => {
     fireEvent.change(classTypeInput, { target: { value: "First Class" } });
     expect(classTypeInput).toHaveValue("First Class");
   });
+  test("shows no flights found message when search returns empty result", async () => {
+    vi.restoreAllMocks();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url) => {
+        if (url.toString().includes("/cities")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve(["Delhi", "Mumbai"]),
+          });
+        }
+
+        if (url.toString().includes("/flights/search")) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ flights: [] }),
+          });
+        }
+
+        return Promise.reject("Unknown API call");
+      })
+    );
+
+    render(<Search />);
+
+    await waitFor(() => screen.getByLabelText(/Source/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
+      target: { value: "Delhi" },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
+      target: { value: "Mumbai" },
+    });
+
+    const searchBtn = screen.getByRole("button", { name: /Search/i });
+    fireEvent.click(searchBtn);
+
+    expect(
+      await screen.findByText(/No flights found for the selected route/i)
+    ).toBeInTheDocument();
+  });
+
   test("handles fetch rejection", async () => {
     vi.restoreAllMocks();
     vi.stubGlobal(
