@@ -77,6 +77,41 @@ describe("InputDropdown", () => {
     expect(mockOnChange).toHaveBeenCalledWith("Mumbai");
   });
 
+  test("renders all options without filtering when disableFilter is true", () => {
+    render(
+      <InputDropdown
+        id="class_type"
+        name="class_type"
+        placeholder="Select class"
+        options={["Economy", "Business", "First Class"]}
+        disableFilter={true}
+        onChange={() => {}}
+      />
+    );
+
+    const input = screen.getByPlaceholderText("Select class");
+    fireEvent.click(input);
+
+    expect(screen.getByText("Economy")).toBeInTheDocument();
+    expect(screen.getByText("Business")).toBeInTheDocument();
+    expect(screen.getByText("First Class")).toBeInTheDocument();
+  });
+  test("input is readOnly when disableFilter is true", () => {
+    render(
+      <InputDropdown
+        id="class_type"
+        name="class_type"
+        placeholder="Select class"
+        options={["Economy", "Second Class", "First Class"]}
+        disableFilter={true}
+        onChange={() => {}}
+      />
+    );
+
+    const input = screen.getByPlaceholderText("Select class");
+    expect(input).toHaveAttribute("readOnly");
+  });
+
   test("closes dropdown when clicking outside", () => {
     render(
       <div>
