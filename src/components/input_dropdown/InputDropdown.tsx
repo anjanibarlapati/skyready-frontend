@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import dropdown from '../assets/dropdown.png';
-import './InputDropdown.css';
+import React, { useState, useRef, useEffect } from "react";
+import dropdown from "../assets/dropdown.png";
+import "./InputDropdown.css";
 
 interface InputDropdownProps {
   id: string;
@@ -9,15 +9,17 @@ interface InputDropdownProps {
   value?: string;
   options: string[];
   onChange?: (value: string) => void;
+  disableFilter?: boolean;
 }
 
 export const InputDropdown: React.FC<InputDropdownProps> = ({
   id,
   name,
-  placeholder = '',
-  value = '',
+  placeholder = "",
+  value = "",
   options,
-  onChange
+  onChange,
+  disableFilter = false,
 }) => {
   const [inputValue, setInputValue] = useState<string>(value);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
@@ -37,18 +39,25 @@ export const InputDropdown: React.FC<InputDropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
-    <div className="input-dropdown" style={{ position: 'relative', width: '100%' }} ref={dropdownRef}>
+    <div
+      className="input-dropdown"
+      style={{ position: "relative", width: "100%" }}
+      ref={dropdownRef}
+    >
       <input
         type="text"
         id={id}
@@ -62,6 +71,7 @@ export const InputDropdown: React.FC<InputDropdownProps> = ({
         onClick={handleInputClick}
         autoComplete="off"
         className="dropdown-input"
+        readOnly={disableFilter}
       />
 
       <span className="dropdown-icon" onClick={handleInputClick}>
@@ -69,19 +79,26 @@ export const InputDropdown: React.FC<InputDropdownProps> = ({
       </span>
 
       {showDropdown && options && options.length > 0 && (
-        <div className={`dropdown-list ${showDropdown ? 'show' : 'hide'}`} id={`${id}-list`} data-testid={`${id}-list`}>
-          {options
-            .filter((option) => option.toLowerCase().includes(inputValue.toLowerCase()))
-            .map((option, index) => (
-              <div
-                key={index}
-                className="dropdown-item"
-                data-value={option}
-                onClick={() => handleOptionClick(option)}
-              >
-                {option}
-              </div>
-            ))}
+        <div
+          className={`dropdown-list ${showDropdown ? "show" : "hide"}`}
+          id={`${id}-list`}
+          data-testid={`${id}-list`}
+        >
+          {(disableFilter
+            ? options
+            : options.filter((option) =>
+                option.toLowerCase().includes(inputValue.toLowerCase())
+              )
+          ).map((option, index) => (
+            <div
+              key={index}
+              className="dropdown-item"
+              data-value={option}
+              onClick={() => handleOptionClick(option)}
+            >
+              {option}
+            </div>
+          ))}
         </div>
       )}
     </div>
