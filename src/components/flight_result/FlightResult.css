@@ -172,7 +172,6 @@
   background-color: #ff6b35;
 }
 
-/* Responsive Styles */
 @media (max-width: 768px) {
   .flight-block-container {
     justify-content: center;
