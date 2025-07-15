@@ -41,6 +41,20 @@
   font-family: "Poppins", sans-serif;
 }
 
+.input-dropdown {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 200px;
+}
+
+.input-label {
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  font-family: "Poppins", sans-serif;
+  color: #333;
+}
+
 .dropdown-icon {
   position: absolute;
   right: -8px;
