@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import dropdown from "../assets/dropdown.png";
+import dropdown from "../../assets/dropdown.png";
 import "./InputDropdown.css";
 
 interface InputDropdownProps {
