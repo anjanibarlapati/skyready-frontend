@@ -52,11 +52,6 @@ export const Search = () => {
     (city: string) => city.toLowerCase() === destination.toLowerCase()
   );
 
-  if (!matchedSource || !matchedDestination) {
-    setError("Please select valid cities from dropdown.");
-    return;
-  }
-
   if (matchedSource === matchedDestination) {
     setError("Source and destination cannot be the same.");
     return;
