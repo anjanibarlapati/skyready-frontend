@@ -15,7 +15,6 @@ export interface Flight {
 
 interface FlightCardProps {
   flight: Flight;
-  hideBookButton?: boolean;
 }
 
 
