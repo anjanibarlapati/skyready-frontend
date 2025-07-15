@@ -57,7 +57,7 @@ export const Search = () => {
     }
 
     if (matchedSource === matchedDestination) {
-      dispatch(setMessage("Source and destination cannot be same."));
+      dispatch(setMessage("Source and destination cannot be same"));
       return;
     }
 
