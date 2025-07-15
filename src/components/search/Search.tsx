@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
-import {
-  FlightResult,
-  type Flight,
-} from "../../pages/flight_result/FlightResult";
 import "./Search.css";
+import { useDispatch } from "react-redux";
+import { setFlights, setMessage } from "../../redux/flightsSlice";
 
 export const Search = () => {
   const [source, setSource] = useState("");
@@ -13,12 +11,10 @@ export const Search = () => {
     new Date().toISOString().split("T")[0]
   );
   const [travellersCount, setTravellersCount] = useState(1);
-  const [classType, setClassType] = useState("Economic");
-  const [error, setError] = useState("");
+  const [classType, setClassType] = useState("Economy");
   const [cities, setCities] = useState<string[]>([]);
-  const [flights, setFlights] = useState<Flight[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const fetchCities = async () => {
       try {
@@ -46,6 +42,7 @@ export const Search = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    dispatch(setMessage(""));
 
     const matchedSource = cities.find(
       (city) => city.toLowerCase() === source.toLowerCase()
@@ -55,24 +52,19 @@ export const Search = () => {
     );
 
     if (!source || !destination) {
-      setError("Please select both source and destination.");
+      dispatch(setMessage("Please select both source and destination."));
       return;
     }
 
     if (!matchedSource || !matchedDestination) {
-      setError("Please select valid cities from dropdown.");
+      dispatch(setMessage("Please select valid cities."));
       return;
     }
 
     if (matchedSource === matchedDestination) {
-      setError("Source and destination cannot be the same.");
+      dispatch(setMessage("Source and destination cannot be same."));
       return;
     }
-
-    setError("");
-    setLoading(true);
-    setFlights([]);
-    setHasSearched(true);
 
     try {
       const response = await fetch(
@@ -92,14 +84,17 @@ export const Search = () => {
         }
       );
 
-      const data = await response.json();
-      setFlights(data.flights || []);
-    } catch (err) {
-      console.error("Error fetching flights:", err);
-      setError("Something went wrong while fetching flights.");
-    } finally {
-      setLoading(false);
-    }
+      const result = await response.json();
+
+      if (response.ok) {
+        dispatch(setFlights(result.flights));
+      } else {
+        dispatch(setFlights([]));
+        dispatch(setMessage(result.message || "Failed to fetch flights."));
+      }
+    } catch {
+      dispatch(setMessage("Something went wrong while fetching flights."));
+    } 
   };
 
   return (
@@ -182,7 +177,7 @@ export const Search = () => {
                 name="class_type"
                 placeholder="Select class type"
                 value={classType}
-                options={["Economic", "Second Class", "First Class"]}
+                options={["Economy", "Second Class", "First Class"]}
                 onChange={setClassType}
               />
             </div>
@@ -195,27 +190,8 @@ export const Search = () => {
               </div>
             </div>
           </div>
-
-          <div className="search-error">{error}</div>
         </div>
       </form>
-
-      {loading && <div className="loading">Loading flights...</div>}
-
-      {!loading && flights.length > 0 && (
-        <div className="flight-results-container">
-          <h2 className="flight-results-header">Available Flights</h2>
-          {flights.map((flight, index) => (
-            <FlightResult key={index} flight={flight} />
-          ))}
-        </div>
-      )}
-
-      {!loading && hasSearched && flights.length === 0 && (
-        <div className="flight-results-container">
-          <p> No flights found for the selected route.</p>
-        </div>
-      )}
     </div>
   );
 };
