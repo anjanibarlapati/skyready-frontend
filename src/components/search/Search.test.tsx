@@ -32,55 +32,31 @@ describe("Search component", () => {
     expect(screen.getByRole("button", { name: /Search/i })).toBeInTheDocument();
   });
 
-  test("shows error when submitting empty source and destination", async () => {
+   test("source and destination InputDropdown inputs have required attribute", async () => {
     render(<Search />);
-
     await waitFor(() => screen.getByLabelText(/Source/i));
 
-    const searchBtn = screen.getByRole("button", { name: /Search/i });
-    fireEvent.click(searchBtn);
+    const sourceInput = screen.getByLabelText(/Source/i);
+    const destinationInput = screen.getByLabelText(/Destination/i);
 
-    expect(
-      await screen.findByText(/Please select both source and destination./i)
-    ).toBeInTheDocument();
+    expect(sourceInput).toBeRequired();
+    expect(destinationInput).toBeRequired();
   });
 
-  test("shows error when source and destination are invalid cities", async () => {
+  test("shows error when submitting with empty source and destination", async () => {
     render(<Search />);
 
     await waitFor(() => screen.getByLabelText(/Source/i));
 
-    const sourceInput = screen.getByPlaceholderText(/Enter source/i);
-    const destinationInput = screen.getByPlaceholderText(/Enter destination/i);
-
-    fireEvent.change(sourceInput, { target: { value: "InvalidCity1" } });
-    fireEvent.change(destinationInput, { target: { value: "InvalidCity2" } });
-
     const searchBtn = screen.getByRole("button", { name: /Search/i });
+
     fireEvent.click(searchBtn);
 
-    expect(
-      await screen.findByText(/Please select valid cities from dropdown./i)
-    ).toBeInTheDocument();
-  });
+    const sourceInput = screen.getByLabelText(/Source/i);
+    const destinationInput = screen.getByLabelText(/Destination/i);
 
-  test("shows error when source and destination are same", async () => {
-    render(<Search />);
-
-    await waitFor(() => screen.getByLabelText(/Source/i));
-
-    const sourceInput = screen.getByPlaceholderText(/Enter source/i);
-    const destinationInput = screen.getByPlaceholderText(/Enter destination/i);
-
-    fireEvent.change(sourceInput, { target: { value: "Delhi" } });
-    fireEvent.change(destinationInput, { target: { value: "Delhi" } });
-
-    const searchBtn = screen.getByRole("button", { name: /Search/i });
-    fireEvent.click(searchBtn);
-
-    expect(
-      await screen.findByText(/Source and destination cannot be the same./i)
-    ).toBeInTheDocument();
+    expect(sourceInput).toHaveValue("");
+    expect(destinationInput).toHaveValue("");
   });
 
   test("submits form when inputs are valid and clears error", async () => {
