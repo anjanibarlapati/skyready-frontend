@@ -51,11 +51,6 @@ export const Search = () => {
       (city) => city.toLowerCase() === destination.toLowerCase()
     );
 
-    if (!source || !destination) {
-      dispatch(setMessage("Please select both source and destination."));
-      return;
-    }
-
     if (!matchedSource || !matchedDestination) {
       dispatch(setMessage("Please select valid cities."));
       return;
@@ -111,6 +106,7 @@ export const Search = () => {
                 value={source}
                 options={cities}
                 onChange={setSource}
+                required={true}
               />
             </div>
 
@@ -123,6 +119,7 @@ export const Search = () => {
                 value={destination}
                 options={cities}
                 onChange={setDestination}
+                required={true}
               />
             </div>
 

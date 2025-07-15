@@ -10,6 +10,7 @@ interface InputDropdownProps {
   options: string[];
   onChange?: (value: string) => void;
   disableFilter?: boolean;
+  required?: boolean;
 }
 
 export const InputDropdown: React.FC<InputDropdownProps> = ({
@@ -20,6 +21,7 @@ export const InputDropdown: React.FC<InputDropdownProps> = ({
   options,
   onChange,
   disableFilter = false,
+  required = false,
 }) => {
   const [inputValue, setInputValue] = useState<string>(value);
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
@@ -66,12 +68,16 @@ export const InputDropdown: React.FC<InputDropdownProps> = ({
         value={inputValue}
         onChange={(e) => {
           setInputValue(e.target.value);
+          if (!disableFilter && options.length > 0) {
+            setShowDropdown(true);
+          }
           if (onChange) onChange(e.target.value);
         }}
         onClick={handleInputClick}
         autoComplete="off"
         className="dropdown-input"
         readOnly={disableFilter}
+        required={required}
       />
 
       <span className="dropdown-icon" onClick={handleInputClick}>

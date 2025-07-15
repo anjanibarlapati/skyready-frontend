@@ -60,6 +60,17 @@ describe("Search component", () => {
     expect(screen.getByLabelText(/Class Type/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Search/i })).toBeInTheDocument();
   });
+
+   test("source and destination InputDropdown inputs have required attribute", async () => {
+    renderSearchForm();
+    await waitFor(() => screen.getByLabelText(/Source/i));
+
+    const sourceInput = screen.getByLabelText(/Source/i);
+    const destinationInput = screen.getByLabelText(/Destination/i);
+
+    expect(sourceInput).toBeRequired();
+    expect(destinationInput).toBeRequired();
+  });
   
   test("dispatches setMessage('') before submission", async () => {
   renderSearchForm();
@@ -71,15 +82,6 @@ describe("Search component", () => {
     expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
   });
 });
-
-
-  test("dispatches error for empty source/destination", async () => {
-    renderSearchForm();
-    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalled();
-    });
-  });
   
 
   test("dispatches error for invalid cities", async () => {
