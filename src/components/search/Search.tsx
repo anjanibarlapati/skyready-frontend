@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
 import "./Search.css";
 import { useDispatch } from "react-redux";
-import { setFlights, setMessage } from "../../redux/flightsSlice";
+import { setMessage, setSearchData } from "../../redux/flightsSlice";
+import { useFetchFlights } from "../../hooks/useFetchFlights";
 
 export const Search = () => {
   const [source, setSource] = useState("");
@@ -13,13 +14,14 @@ export const Search = () => {
   const [travellersCount, setTravellersCount] = useState(1);
   const [classType, setClassType] = useState("Economy");
   const [cities, setCities] = useState<string[]>([]);
+
   const dispatch = useDispatch();
+  const { fetchFlights } = useFetchFlights();
 
   useEffect(() => {
     const fetchCities = async () => {
       try {
         const url = `${import.meta.env.VITE_BASE_URL}/api/v1/cities`;
-
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
@@ -40,59 +42,39 @@ export const Search = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(setMessage(""));
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  dispatch(setMessage(""));
 
-    const matchedSource = cities.find(
-      (city) => city.toLowerCase() === source.toLowerCase()
-    );
-    const matchedDestination = cities.find(
-      (city) => city.toLowerCase() === destination.toLowerCase()
-    );
+  const matchedSource = cities.find(
+    (city) => city.toLowerCase() === source.toLowerCase()
+  );
+  const matchedDestination = cities.find(
+    (city) => city.toLowerCase() === destination.toLowerCase()
+  );
 
-    if (!matchedSource || !matchedDestination) {
-      dispatch(setMessage("Please select valid cities."));
-      return;
-    }
+  if (!matchedSource || !matchedDestination) {
+    dispatch(setMessage("Please select valid cities."));
+    return;
+  }
 
-    if (matchedSource === matchedDestination) {
-      dispatch(setMessage("Source and destination cannot be same"));
-      return;
-    }
+  if (matchedSource === matchedDestination) {
+    dispatch(setMessage("Source and destination cannot be same"));
+    return;
+  }
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_URL}/api/v1/flights/search`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            source: matchedSource,
-            destination: matchedDestination,
-            departure_date: departureDate,
-            travellers_count: travellersCount,
-            class_type: classType,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.ok) {
-        dispatch(setFlights(result.flights));
-      } else {
-        dispatch(setFlights([]));
-        dispatch(setMessage(result.message || "Failed to fetch flights."));
-      }
-    } catch {
-      dispatch(setMessage("Something went wrong while fetching flights."));
-    } finally{
-      document.getElementById('flight-results')?.scrollIntoView({ behavior: 'smooth' });
-    }
+  const searchParams = {
+    selectedDate: departureDate,
+    source,
+    destination,
+    travellersCount,
+    classType,
   };
+
+  dispatch(setSearchData(searchParams));     // Update Redux
+  await fetchFlights(searchParams);          // Use latest input directly
+};
+
 
   return (
     <div className="search-main-container">
