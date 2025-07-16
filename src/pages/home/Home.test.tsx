@@ -21,6 +21,13 @@ const renderHomeWithState = async (
         flights,
         message,
         alert,
+        searchData: {
+          selectedDate: new Date().toISOString().split("T")[0],
+          source: "",
+          destination: "",
+          travellersCount: 1,
+          classType: "Economy",
+        },
       },
     },
   });
@@ -35,6 +42,7 @@ const renderHomeWithState = async (
   });
 
 };
+
 
 describe('Home component', () => {
   beforeEach(() => {
