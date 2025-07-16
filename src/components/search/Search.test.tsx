@@ -14,6 +14,7 @@ const createMockStore = () =>
       flights: {
         flights: [],
         message: "",
+        alert: null
       },
     },
 });
@@ -120,6 +121,9 @@ describe("Search component", () => {
                 destination: "Mumbai",
                 seats: 5,
                 price: 4500,
+                base_price: 4000,
+                travellers_count: 1,
+                class_type: "Economy",
               },
             ],
           }),
