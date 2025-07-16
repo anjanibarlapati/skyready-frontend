@@ -6,16 +6,32 @@ export interface Alert {
     type: 'success' | 'failure',
     message: string
 }
+export interface SearchData {
+  selectedDate: string;
+  source: string;
+  destination: string;
+  travellersCount: number;
+  classType: string;
+}
+
 interface FlightsState {
   flights: Flight[];
   message: string;
-  alert: Alert | null
+  alert: Alert | null;
+  searchData: SearchData
 }
 
 const initialState: FlightsState = {
   flights: [],
   message: "",
   alert: null,
+  searchData:{
+    selectedDate: new Date().toISOString().split("T")[0],
+    source: "",
+    destination: "",
+    travellersCount: 1,
+    classType: "Economy",
+  }
 };
 
 const flightsSlice = createSlice({
@@ -36,9 +52,15 @@ const flightsSlice = createSlice({
    },
    clearAlert(state) {
     state.alert = null;
+  },
+  setSearchData(state, action: PayloadAction<Partial<FlightsState['searchData']>>) {
+      state.searchData = {
+        ...state.searchData,
+        ...action.payload,
+      };
   }
   },
 });
 
-export const { setFlights, setMessage, setAlert, clearAlert, clearFlights } = flightsSlice.actions;
+export const { setFlights, setMessage, setAlert, clearAlert, clearFlights, setSearchData } = flightsSlice.actions;
 export const flightsReducer = flightsSlice.reducer;
