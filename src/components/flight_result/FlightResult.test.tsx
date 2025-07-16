@@ -1,6 +1,16 @@
-import { render, screen } from "@testing-library/react";
-import { describe, test, expect } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, test, expect, vi } from "vitest";
 import { FlightResult, type Flight } from "./FlightResult";
+import { MemoryRouter } from "react-router-dom";
+
+const mockNavigate = vi.fn();
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual("react-router-dom");
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
 
 const mockFlight: Flight = {
   airline_name: "IndiGo",
@@ -8,15 +18,28 @@ const mockFlight: Flight = {
   departure_time: "08:00 AM",
   arrival_time: "10:30 AM",
   arrival_date_difference: "+1 day",
+  departure_date: "2025-07-20",
+  arrival_date: "2025-07-20",
   source: "Delhi",
   destination: "Mumbai",
   seats: 5,
   price: 3500,
+  base_price: 3000,
+  travellers_count: 2,
+  class_type: "Economy",
+};
+
+const renderWithRouter = (flight: Flight) => {
+  render(
+    <MemoryRouter>
+      <FlightResult flight={flight} />
+    </MemoryRouter>
+  );
 };
 
 describe("FlightResult component", () => {
   test("renders all flight details correctly", () => {
-    render(<FlightResult flight={mockFlight} />);
+    renderWithRouter(mockFlight);
 
     expect(screen.getByText("IndiGo")).toBeInTheDocument();
     expect(screen.getByText("6E123")).toBeInTheDocument();
@@ -31,25 +54,38 @@ describe("FlightResult component", () => {
   });
 
   test("does not show arrival_date_difference if not provided", () => {
-    const flightWithoutDateDiff = { ...mockFlight, arrival_date_difference: undefined };
+    const flightWithoutDateDiff: Flight = {
+      ...mockFlight,
+      arrival_date_difference: undefined,
+    };
 
-    render(<FlightResult flight={flightWithoutDateDiff} />);
+    renderWithRouter(flightWithoutDateDiff);
 
     expect(screen.queryByText("+1 day")).not.toBeInTheDocument();
   });
 
   test("formats price correctly with commas", () => {
-    const expensiveFlight = { ...mockFlight, price: 125000 };
+    const expensiveFlight: Flight = {
+      ...mockFlight,
+      price: 125000,
+    };
 
-    render(<FlightResult flight={expensiveFlight} />);
+    renderWithRouter(expensiveFlight);
 
     expect(screen.getByText("₹ 1,25,000")).toBeInTheDocument();
   });
 
-  test("shows Book button by default", () => {
-    render(<FlightResult flight={mockFlight} />);
+  test("renders the Book button", () => {
+    renderWithRouter(mockFlight);
     expect(screen.getByRole("button", { name: "Book" })).toBeInTheDocument();
   });
 
- 
+    test("navigates to /confirm-booking with flight state on Book button click", () => {
+    renderWithRouter(mockFlight);
+    fireEvent.click(screen.getByRole("button", { name: "Book" }));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/confirm-booking", {
+      state: { flight: mockFlight },
+    });
+  });
 });
