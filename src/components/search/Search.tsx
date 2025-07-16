@@ -42,39 +42,38 @@ export const Search = () => {
     });
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  dispatch(setMessage(""));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(setMessage(""));
 
-  const matchedSource = cities.find(
-    (city) => city.toLowerCase() === source.toLowerCase()
-  );
-  const matchedDestination = cities.find(
-    (city) => city.toLowerCase() === destination.toLowerCase()
-  );
+    const matchedSource = cities.find(
+      (city) => city.toLowerCase() === source.toLowerCase()
+    );
+    const matchedDestination = cities.find(
+      (city) => city.toLowerCase() === destination.toLowerCase()
+    );
 
-  if (!matchedSource || !matchedDestination) {
-    dispatch(setMessage("Please select valid cities."));
-    return;
-  }
+    if (!matchedSource || !matchedDestination) {
+      dispatch(setMessage("Please select valid cities."));
+      return;
+    }
 
-  if (matchedSource === matchedDestination) {
-    dispatch(setMessage("Source and destination cannot be same"));
-    return;
-  }
+    if (matchedSource === matchedDestination) {
+      dispatch(setMessage("Source and destination cannot be same"));
+      return;
+    }
 
-  const searchParams = {
-    selectedDate: departureDate,
-    source,
-    destination,
-    travellersCount,
-    classType,
+    const searchParams = {
+      selectedDate: departureDate,
+      source,
+      destination,
+      travellersCount,
+      classType,
+    };
+
+    dispatch(setSearchData(searchParams));
+    await fetchFlights(searchParams);
   };
-
-  dispatch(setSearchData(searchParams));     // Update Redux
-  await fetchFlights(searchParams);          // Use latest input directly
-};
-
 
   return (
     <div className="search-main-container">
