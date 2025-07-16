@@ -89,7 +89,9 @@ export const Search = () => {
       }
     } catch {
       dispatch(setMessage("Something went wrong while fetching flights."));
-    } 
+    } finally{
+      document.getElementById('flight-results')?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
