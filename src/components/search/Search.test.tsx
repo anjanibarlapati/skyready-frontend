@@ -6,7 +6,6 @@ import { Provider } from "react-redux";
 import { flightsReducer, setMessage } from "../../redux/flightsSlice";
 import { configureStore } from "@reduxjs/toolkit";
 
-
 const createMockStore = () =>
   configureStore({
     reducer: { flights: flightsReducer },
@@ -14,19 +13,27 @@ const createMockStore = () =>
       flights: {
         flights: [],
         message: "",
+        searchData: {
+          source: "",
+          destination: "",
+          selectedDate: "",
+          travellersCount: 1,
+          classType: "",
+        },
       },
     },
-});
+  });
 const mockDispatch = vi.fn();
 
 vi.mock("react-redux", async () => {
-  const actual = await vi.importActual<typeof import("react-redux")>("react-redux");
+  const actual = await vi.importActual<typeof import("react-redux")>(
+    "react-redux"
+  );
   return {
     ...actual,
     useDispatch: () => mockDispatch,
   };
 });
-
 
 const renderSearchForm = () => {
   return render(
@@ -39,10 +46,13 @@ const renderSearchForm = () => {
 describe("Search component", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue(["Delhi", "Mumbai", "Bengaluru"]),
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue(["Delhi", "Mumbai", "Bengaluru"]),
+      })
+    );
   });
 
   afterEach(() => {
@@ -61,7 +71,7 @@ describe("Search component", () => {
     expect(screen.getByRole("button", { name: /Search/i })).toBeInTheDocument();
   });
 
-   test("source and destination InputDropdown inputs have required attribute", async () => {
+  test("source and destination InputDropdown inputs have required attribute", async () => {
     renderSearchForm();
     await waitFor(() => screen.getByLabelText(/Source/i));
 
@@ -71,23 +81,30 @@ describe("Search component", () => {
     expect(sourceInput).toBeRequired();
     expect(destinationInput).toBeRequired();
   });
-  
-  test("dispatches setMessage('') before submission", async () => {
-  renderSearchForm();
-  fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "Delhi" } });
-  fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "Mumbai" } });
-  fireEvent.click(screen.getByRole("button", { name: /Search/i }));
 
-  await waitFor(() => {
-    expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
+  test("dispatches setMessage('') before submission", async () => {
+    renderSearchForm();
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
+      target: { value: "Delhi" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
+      target: { value: "Mumbai" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
+    });
   });
-});
-  
 
   test("dispatches error for invalid cities", async () => {
     renderSearchForm();
-    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "Xyz" } });
-    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "Abc" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
+      target: { value: "Xyz" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
+      target: { value: "Abc" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
@@ -96,54 +113,63 @@ describe("Search component", () => {
     });
   });
 
-
   test("submits form with valid input", async () => {
-    vi.stubGlobal("fetch", vi.fn((url) => {
-      if (url.toString().includes("/cities")) {
-        return vi.fn().mockResolvedValue({
-          ok: true,
-          json: vi.fn().mockResolvedValue(["Delhi", "Mumbai"]),
-        })();
-      }
-      if (url.toString().includes("/flights/search")) {
-        return vi.fn().mockResolvedValue({
-          ok: true,
-          json: vi.fn().mockResolvedValue({
-            flights: [
-              {
-                airline_name: "Air India",
-                flight_number: "AI101",
-                departure_time: "10:00",
-                arrival_time: "12:30",
-                arrival_date_difference: "",
-                source: "Delhi",
-                destination: "Mumbai",
-                seats: 5,
-                price: 4500,
-              },
-            ],
-          }),
-        })();
-      }
-      return vi.fn().mockRejectedValue(new Error("Unknown API call"))();
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url) => {
+        if (url.toString().includes("/cities")) {
+          return vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue(["Delhi", "Mumbai"]),
+          })();
+        }
+        if (url.toString().includes("/flights/search")) {
+          return vi.fn().mockResolvedValue({
+            ok: true,
+            json: vi.fn().mockResolvedValue({
+              flights: [
+                {
+                  airline_name: "Air India",
+                  flight_number: "AI101",
+                  departure_time: "10:00",
+                  arrival_time: "12:30",
+                  arrival_date_difference: "",
+                  source: "Delhi",
+                  destination: "Mumbai",
+                  seats: 5,
+                  price: 4500,
+                },
+              ],
+            }),
+          })();
+        }
+        return vi.fn().mockRejectedValue(new Error("Unknown API call"))();
+      })
+    );
 
     renderSearchForm();
     await waitFor(() => screen.getByLabelText(/Source/i));
-    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "Delhi" } });
-    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "Mumbai" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
+      target: { value: "Delhi" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
+      target: { value: "Mumbai" },
+    });
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
     await waitFor(() => {
       expect(screen.queryByText(/Please select/i)).not.toBeInTheDocument();
     });
   });
 
-
   test("changes traveller count within limits", async () => {
     renderSearchForm();
     await waitFor(() => screen.getByLabelText(/Travellers/i));
-    const plus = screen.getAllByRole("button").find((btn) => btn.textContent === "+")!;
-    const minus = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
+    const plus = screen
+      .getAllByRole("button")
+      .find((btn) => btn.textContent === "+")!;
+    const minus = screen
+      .getAllByRole("button")
+      .find((btn) => btn.textContent === "-")!;
     const input = screen.getByRole("spinbutton") as HTMLInputElement;
     expect(input.value).toBe("1");
     fireEvent.click(minus);
@@ -159,7 +185,9 @@ describe("Search component", () => {
   test("updates departure date", async () => {
     renderSearchForm();
     const input = await screen.findByLabelText(/Departure Date/i);
-    const futureDate = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    const futureDate = new Date(Date.now() + 86400000)
+      .toISOString()
+      .split("T")[0];
     fireEvent.change(input, { target: { value: futureDate } });
     expect(input).toHaveValue(futureDate);
   });
