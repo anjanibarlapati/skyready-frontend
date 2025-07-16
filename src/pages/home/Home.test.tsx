@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen} from '@testing-library/react';
 import { Home } from './Home';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
@@ -6,7 +6,8 @@ import { flightsReducer } from '../../redux/flightsSlice';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { Flight } from '../../components/flight_result/FlightResult';
 
-const renderHomeWithState = async (flights: Flight[], message = '') => {
+
+const renderHomeWithState = (flights: Flight[], message = '') => {
   const mockStore = configureStore({
     reducer: {
       flights: flightsReducer,
@@ -15,18 +16,24 @@ const renderHomeWithState = async (flights: Flight[], message = '') => {
       flights: {
         flights,
         message,
+        searchData: {
+          selectedDate: new Date().toISOString().split("T")[0],
+          source: "",
+          destination: "",
+          travellersCount: 1,
+          classType: "Economy",
+        },
       },
     },
   });
 
-  await waitFor(() =>
-    render(
-      <Provider store={mockStore}>
-        <Home />
-      </Provider>
-    )
+  render(
+    <Provider store={mockStore}>
+      <Home />
+    </Provider>
   );
 };
+
 
 describe('Home component', () => {
   beforeEach(() => {
