@@ -5,6 +5,7 @@ on:
   push:
     branches: 
       - main
+      - feature/booking-seats
 
 env:
   VITE_BASE_URL: ${{vars.VITE_BASE_URL}}
