@@ -42,7 +42,7 @@ describe("useFetchFlights hook", () => {
       },
     ];
 
-    global.fetch = vi.fn().mockResolvedValue({
+    globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue({ flights: fakeFlights }),
     });
@@ -53,7 +53,7 @@ describe("useFetchFlights hook", () => {
       await result.current.fetchFlights(searchData);
     });
 
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       `${import.meta.env.VITE_BASE_URL}/api/v1/flights/search`,
       expect.objectContaining({
         method: "POST",
@@ -75,7 +75,7 @@ describe("useFetchFlights hook", () => {
   test("handles non-ok response and dispatches setFlights([]) and setMessage", async () => {
     const errorMessage = "No flights available";
 
-    global.fetch = vi.fn().mockResolvedValue({
+    globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
       json: vi.fn().mockResolvedValue({ message: errorMessage }),
     });
@@ -91,7 +91,7 @@ describe("useFetchFlights hook", () => {
   });
 
   test("handles fetch error and dispatches setMessage", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
 
     const { result } = renderHook(() => useFetchFlights());
 
