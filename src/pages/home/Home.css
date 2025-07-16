@@ -29,3 +29,26 @@
   margin: 0;
   text-align: center;
 }
+
+.alert {
+  margin: 10px auto 0px auto;
+  max-width: 600px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  text-align: center;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: opacity 0.5s ease-in-out;
+}
+
+.alert-success {
+  background-color: #d1f7d6;
+  color: #1d643b;
+}
+
+.alert-failure {
+  background-color: #fde2e2;
+  color: #842029;
+}
+
