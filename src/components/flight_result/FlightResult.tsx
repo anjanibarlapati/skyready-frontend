@@ -1,16 +1,22 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./FlightResult.css";
 
 export interface Flight {
-  airline_name: string;
   flight_number: string;
-  departure_time: string;
-  arrival_time: string;
-  arrival_date_difference?: string;
+  airline_name: string;
   source: string;
   destination: string;
-  seats: number | string;
-  price: number | string;
+  departure_date: string;          
+  departure_time: string;
+  arrival_date: string;   
+  arrival_time: string;
+  arrival_date_difference?: string; 
+  seats: number;
+  price: number;
+  base_price: number;
+  travellers_count: number;
+  class_type: string;
 }
 
 interface FlightCardProps {
@@ -19,7 +25,12 @@ interface FlightCardProps {
 
 
 export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
+  const navigate = useNavigate();
   const formattedPrice = Number(flight.price).toLocaleString("en-IN");
+    const handleBook = () => {
+    navigate("/confirm-booking", { state: { flight } });
+  };
+
 
   return (
       <div className="flight-card-container">
@@ -62,7 +73,7 @@ export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
               <span className="price-value">₹ {formattedPrice}</span>
             </div>
 
-            <div className="book-button-container">
+            <div className="book-button-container" onClick={handleBook}>
               <button className="book-button">Book</button>
             </div>
           </div>
