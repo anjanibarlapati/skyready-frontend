@@ -19,6 +19,6 @@ describe("Header", () => {
     expect(homeLink).toHaveAttribute("href", "/");
 
     expect(aboutUsLink).toBeInTheDocument();
-    expect(aboutUsLink).toHaveAttribute("href", "#about-us");
+    expect(aboutUsLink).toHaveAttribute("href", "/#about-us");
   });
 });

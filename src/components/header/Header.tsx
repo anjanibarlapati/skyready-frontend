@@ -10,7 +10,7 @@ export const Header = () => {
             <a href="/" className="nav-button">
               Home
             </a>
-            <a href="#about-us" className="nav-button">
+            <a href="/#about-us" className="nav-button">
               About Us
             </a>
           </nav>
