@@ -5,6 +5,7 @@ import { Search } from "../../components/search/Search";
 import "./Home.css";
 import type { RootState } from "../../redux/store";
 import { FlightResult } from "../../components/flight_result/FlightResult";
+import { DateNavigator } from "../../components/DateNavigator/DateNavigator";
 
 export const Home = () => {
   const { flights, message } = useSelector((state: RootState) => state.flights);
@@ -17,12 +18,16 @@ export const Home = () => {
         {flights.length > 0 ? (
           <>
             <h2>Available Flights</h2>
+            <DateNavigator/>
             {flights.map((flight, index) => (
               <FlightResult key={index} flight={flight} />
             ))}
           </>
         ) : (
-          <p>{message}</p>
+          <>
+        <DateNavigator />
+        <p>{message}</p>
+      </>
         )}
       </div>}
       <AboutUs/>
