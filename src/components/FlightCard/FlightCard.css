@@ -1,0 +1,144 @@
+.detailedFlightCardContainer {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 32px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.detailedFlightCardContainer:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.detailedFlightDetails {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 20px;
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: none;
+}
+
+.detailedFlightDetails::-webkit-scrollbar {
+  display: none;
+}
+
+.detailedFlightBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 0;
+  min-width: 150px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.detailedAirlineInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailedIcon {
+  font-size: 1.8rem;
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.detailedAirlineName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.detailedFlightNumber {
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.detailedDeparture,
+.detailedArrival,
+.detailedPrice {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: normal;
+  min-width: 140px;
+}
+
+.detailedTime {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.detailedDate {
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.detailedCity {
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.detailedJourneyPath {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.detailedDuration {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.detailedLineImg {
+  width: 100px;
+}
+
+.detailedLabel {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.detailedValue {
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+@media (max-width: 768px) {
+  .detailedFlightCardContainer {
+    padding: 16px 20px;
+  }
+
+  .detailedLineImg {
+    width: 60px;
+  }
+
+  .detailedDate {
+    font-size: 0.85rem;
+  }
+}
