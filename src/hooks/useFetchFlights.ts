@@ -33,9 +33,11 @@ export const useFetchFlights = () => {
         dispatch(setMessage(result.message || "Failed to fetch flights."));
       }
     } catch {
+      dispatch(setFlights([]));
       dispatch(setMessage("Something went wrong while fetching flights."));
+    } finally {
+       document.getElementById('flight-results')?.scrollIntoView({ behavior: 'smooth' });
     }
-  };
-
+  }
   return { fetchFlights };
 };
