@@ -36,7 +36,18 @@ const mockFlight = {
 const createMockStore = () =>
   configureStore({
     reducer: { flights: flightsReducer },
-    preloadedState: { flights: { flights: [], message: "", alert: null } },
+    preloadedState: { flights: { 
+      flights: [], 
+      message: "", 
+      alert: null,
+            searchData: {
+          selectedDate: new Date().toISOString().split("T")[0],
+          source: "",
+          destination: "",
+          travellersCount: 1,
+          classType: "Economy",
+        }, 
+    } },
   });
 
 const renderConfirmBooking = () => {
