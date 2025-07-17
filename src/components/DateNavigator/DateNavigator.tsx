@@ -42,11 +42,11 @@ export const DateNavigator: React.FC = () => {
   return (
     <div className="date-nav-container">
       <button className="nav-btn" onClick={() => changeDate(-1)}>
-        ◀
+        ←
       </button>
       <span className="current-date">{formatDate(currentDate)}</span>
       <button className="nav-btn" onClick={() => changeDate(1)}>
-        ▶
+        →
       </button>
     </div>
   );
