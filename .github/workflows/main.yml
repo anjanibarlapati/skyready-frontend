@@ -6,6 +6,7 @@ on:
     branches: 
       - main
       - feature/previous-next-buttons
+      - fix/build
 
 env:
   VITE_BASE_URL: ${{vars.VITE_BASE_URL}}
