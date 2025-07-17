@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
 import "./Search.css";
 import { useDispatch } from "react-redux";
-import { setMessage, setSearchData } from "../../redux/flightsSlice";
+import { setFlights, setMessage, setSearchData } from "../../redux/flightsSlice";
 import { useFetchFlights } from "../../hooks/useFetchFlights";
 
 export const Search = () => {
@@ -54,11 +54,13 @@ export const Search = () => {
     );
 
     if (!matchedSource || !matchedDestination) {
+      dispatch(setFlights([]));
       dispatch(setMessage("Please select valid cities."));
       return;
     }
 
     if (matchedSource === matchedDestination) {
+      dispatch(setFlights([]));
       dispatch(setMessage("Source and destination cannot be same"));
       return;
     }
@@ -159,6 +161,7 @@ export const Search = () => {
                 value={classType}
                 options={["Economy", "Second Class", "First Class"]}
                 onChange={setClassType}
+                disableFilter={true}
               />
             </div>
 
