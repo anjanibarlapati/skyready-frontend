@@ -39,6 +39,11 @@ describe("useFetchFlights hook", () => {
         destination: "Mumbai",
         seats: 5,
         price: 4500,
+        departure_date: "2025-08-01",
+        arrival_date: "2025-08-01",
+        base_price: 4500,
+        travellers_count: 2,
+        class_type: "Economy",
       },
     ];
 
