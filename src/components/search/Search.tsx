@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useFetchFlights } from "../../hooks/useFetchFlights";
+import {
+  setFlights,
+  setMessage,
+  setSearchData,
+} from "../../redux/flightsSlice";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
 import "./Search.css";
-import { useDispatch } from "react-redux";
-import { setFlights, setMessage, setSearchData } from "../../redux/flightsSlice";
-import { useFetchFlights } from "../../hooks/useFetchFlights";
 
 export const Search = () => {
   const [source, setSource] = useState("");

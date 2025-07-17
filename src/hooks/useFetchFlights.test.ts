@@ -1,12 +1,14 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useFetchFlights } from "./useFetchFlights";
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import { setFlights, setMessage } from "../redux/flightsSlice";
+import { useFetchFlights } from "./useFetchFlights";
 
 const mockDispatch = vi.fn();
 
 vi.mock("react-redux", async () => {
-  const actual = (await vi.importActual<typeof import("react-redux")>("react-redux"));
+  const actual = await vi.importActual<typeof import("react-redux")>(
+    "react-redux"
+  );
   return {
     ...actual,
     useDispatch: () => mockDispatch,
@@ -74,7 +76,9 @@ describe("useFetchFlights hook", () => {
     );
 
     expect(mockDispatch).toHaveBeenCalledWith(setFlights(fakeFlights));
-    expect(mockDispatch).not.toHaveBeenCalledWith(setMessage(expect.anything()));
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      setMessage(expect.anything())
+    );
   });
 
   test("handles non-ok response and dispatches setFlights([]) and setMessage", async () => {

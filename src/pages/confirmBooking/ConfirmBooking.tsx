@@ -1,14 +1,12 @@
 import { useDispatch } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FlightCard } from "../../components/FlightCard/FlightCard";
 import { clearFlights, setAlert } from "../../redux/flightsSlice";
 import "./ConfirmBooking.css";
-import { useLocation, useNavigate } from "react-router-dom";
-
-
 
 export const ConfirmBooking = () => {
-    const { state } = useLocation();
-    const flight = state.flight;
+  const { state } = useLocation();
+  const flight = state.flight;
 
   const baseFare = flight.price * flight.travellers_count;
   const taxes = (flight.price - flight.base_price) * flight.travellers_count;
@@ -18,31 +16,46 @@ export const ConfirmBooking = () => {
 
   const handleConfirmBooking = async () => {
     const payload = {
-        flight: {
-          flight_number: flight.flight_number,
-          departure_date: `${flight.departure_date}T${flight.departure_time}`,
-          class_type: flight.class_type,
-          travellers_count: flight.travellers_count,
-        }
+      flight: {
+        flight_number: flight.flight_number,
+        departure_date: `${flight.departure_date}T${flight.departure_time}`,
+        class_type: flight.class_type,
+        travellers_count: flight.travellers_count,
+      },
     };
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/v1/flights/confirm-booking`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/api/v1/flights/confirm-booking`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result = await response.json();
       if (response.ok) {
-        dispatch(setAlert({type: 'success', message: "🎉 Booking confirmed successfully!"}));
+        dispatch(
+          setAlert({
+            type: "success",
+            message: "🎉 Booking confirmed successfully!",
+          })
+        );
       } else {
-        dispatch(setAlert({type: 'failure', message: `❌ ${result.message}`}));
+        dispatch(
+          setAlert({ type: "failure", message: `❌ ${result.message}` })
+        );
       }
     } catch {
-      dispatch(setAlert({type: 'failure', message: "❌ Network error. Please try again."}));
-    } finally{
+      dispatch(
+        setAlert({
+          type: "failure",
+          message: "❌ Network error. Please try again.",
+        })
+      );
+    } finally {
       dispatch(clearFlights());
       navigate("/");
     }
@@ -56,7 +69,7 @@ export const ConfirmBooking = () => {
         </div>
 
         <div className="booking-details-container">
-          <FlightCard flight={flight}/>
+          <FlightCard flight={flight} />
           <div className="fare-summary-card">
             <h2>Fare Summary</h2>
 
@@ -88,5 +101,3 @@ export const ConfirmBooking = () => {
     </div>
   );
 };
-
-
