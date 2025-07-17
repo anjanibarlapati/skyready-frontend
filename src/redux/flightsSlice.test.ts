@@ -1,8 +1,15 @@
-import { flightsReducer, setFlights, setMessage, setAlert, clearAlert, clearFlights } from './flightsSlice';
+import {
+  flightsReducer,
+  setFlights,
+  setMessage,
+  setAlert,
+  clearAlert,
+  clearFlights,
+  setSearchData,
+} from './flightsSlice';
 import type { Flight } from '../components/flight_result/FlightResult';
 import type { Alert } from './flightsSlice';
 import { describe, test, expect } from 'vitest';
-
 
 describe('flightsSlice reducer', () => {
   const mockFlights: Flight[] = [
@@ -24,10 +31,19 @@ describe('flightsSlice reducer', () => {
     },
   ];
 
+  const initialSearchData = {
+    selectedDate: new Date().toISOString().split('T')[0],
+    source: '',
+    destination: '',
+    travellersCount: 1,
+    classType: 'Economy',
+  };
+
   const initialState = {
     flights: [],
     message: '',
     alert: null,
+    searchData: initialSearchData,
   };
 
   test('setFlights should update the flights array', () => {
@@ -59,5 +75,30 @@ describe('flightsSlice reducer', () => {
   test('clearAlert should reset alert to null', () => {
     const nextState = flightsReducer(initialState, clearAlert());
     expect(nextState.alert).toBeNull();
+  });
+
+  test('setSearchData should update part of searchData', () => {
+    const partialUpdate = {
+      source: 'Delhi',
+      destination: 'Mumbai',
+    };
+
+    const nextState = flightsReducer(initialState, setSearchData(partialUpdate));
+    expect(nextState.searchData.source).toBe('Delhi');
+    expect(nextState.searchData.destination).toBe('Mumbai');
+    expect(nextState.searchData.classType).toBe(initialSearchData.classType); // unchanged
+  });
+
+  test('setSearchData should replace full searchData if provided', () => {
+    const newSearchData = {
+      selectedDate: '2025-08-15',
+      source: 'Hyderabad',
+      destination: 'Bangalore',
+      travellersCount: 3,
+      classType: 'First Class',
+    };
+
+    const nextState = flightsReducer(initialState, setSearchData(newSearchData));
+    expect(nextState.searchData).toEqual(newSearchData);
   });
 });
