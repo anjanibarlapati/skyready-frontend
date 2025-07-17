@@ -54,14 +54,14 @@ describe("DateNavigator", () => {
     expect(screen.getByText("20 Jul 2025")).toBeInTheDocument();
 
     expect(screen.getAllByRole("button")).toHaveLength(2);
-    expect(screen.getByText("◀")).toBeInTheDocument();
-    expect(screen.getByText("▶")).toBeInTheDocument();
+    expect(screen.getByText("←")).toBeInTheDocument();
+    expect(screen.getByText("→")).toBeInTheDocument();
   });
 
   test("clicking previous date button updates date, dispatches setSearchData, and fetchFlights", () => {
     render(<DateNavigator />);
 
-    const prevBtn = screen.getByText("◀");
+    const prevBtn = screen.getByText("←");
     fireEvent.click(prevBtn);
 
     const expectedDate = "2025-07-19";
@@ -84,7 +84,7 @@ describe("DateNavigator", () => {
   test("clicking next date button updates date, dispatches setSearchData, and fetchFlights", () => {
     render(<DateNavigator />);
 
-    const nextBtn = screen.getByText("▶");
+    const nextBtn = screen.getByText("→");
     fireEvent.click(nextBtn);
     const expectedDate = "2025-07-21";
 
