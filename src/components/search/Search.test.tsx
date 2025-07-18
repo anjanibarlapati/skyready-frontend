@@ -3,7 +3,7 @@ import { vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Search } from "./Search";
 import { Provider } from "react-redux";
-import { flightsReducer, setMessage } from "../../redux/flightsSlice";
+import { flightsReducer, setError } from "../../redux/flightsSlice";
 import { configureStore } from "@reduxjs/toolkit";
 
 const createMockStore = () =>
@@ -13,6 +13,8 @@ const createMockStore = () =>
       flights: {
         flights: [],
         message: "",
+        error:"",
+        loading: false,
         alert: null,
         searchData: {
           source: "",
@@ -83,21 +85,6 @@ describe("Search component", () => {
     expect(destinationInput).toBeRequired();
   });
 
-  test("dispatches setMessage('') before submission", async () => {
-    renderSearchForm();
-    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
-      target: { value: "Delhi" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
-      target: { value: "Mumbai" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: /Search/i }));
-
-    await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
-    });
-  });
-
   test("dispatches error for invalid cities", async () => {
     renderSearchForm();
     fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
@@ -109,7 +96,7 @@ describe("Search component", () => {
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
-        setMessage("Please select valid cities.")
+        setError("Please select valid cities.")
       );
     });
   });
