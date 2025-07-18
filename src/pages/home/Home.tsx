@@ -8,9 +8,10 @@ import { FlightResult } from "../../components/flight_result/FlightResult";
 import { useEffect, useState } from "react";
 import { clearAlert } from "../../redux/flightsSlice";
 import { DateNavigator } from "../../components/DateNavigator/DateNavigator";
+import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
 
 export const Home = () => {
-  const { flights, message, alert } = useSelector((state: RootState) => state.flights);
+  const { flights, message, alert, error, loading } = useSelector((state: RootState) => state.flights);
   const [showBookingAlert, setShowBookingAlert] = useState(false);
   const dispatch = useDispatch();
 
@@ -26,6 +27,9 @@ export const Home = () => {
     }
   }, [alert, dispatch]);
 
+  const shouldShowFlightResults = flights.length > 0 || message || error || loading;
+  const shouldShowDateNavigator = flights.length > 0 || message || loading ? true : false;
+
   return (
     <div className="home-container">
       {showBookingAlert && (
@@ -35,19 +39,19 @@ export const Home = () => {
       )}
       <ImageSlider/>
       <Search />
-      { ( flights.length > 0 || message ) && <div id="flight-results" className="flight-results-container">
+      { shouldShowFlightResults && <div id="flight-results" className="flight-results-container">
+        {shouldShowDateNavigator && <DateNavigator />}
+        {loading && <LoadingSpinner/>}
         {flights.length > 0 ? (
           <>
             <h2>Available Flights</h2>
-            <DateNavigator/>
             {flights.map((flight, index) => (
               <FlightResult key={index} flight={flight} />
             ))}
           </>
         ) : (
           <>
-        <DateNavigator />
-        <p>{message}</p>
+        <p>{message || error}</p>
       </>
         )}
       </div>}
