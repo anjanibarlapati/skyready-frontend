@@ -10,9 +10,9 @@
 
 .flight-results-container {
   background-color: rgba(215, 225, 255, 0.3);
-  padding: 35px 20px;
+  padding: 50px 20px;
   border-radius: 16px;
-  margin: 40px auto 20px;
+  margin: 55px auto 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
   max-width: 1200px;
   width: 100%;
