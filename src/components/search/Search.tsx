@@ -4,6 +4,7 @@ import { useFetchFlights } from "../../hooks/useFetchFlights";
 import {
   clearFlights,
   setError,
+  setMessage,
   setSearchData,
 } from "../../redux/flightsSlice";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
@@ -62,6 +63,8 @@ export const Search = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    dispatch(setMessage(""));
+    dispatch(setError(""));
     setLoading(true);
 
     const matchedSource = cities.find(
