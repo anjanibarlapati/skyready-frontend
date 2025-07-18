@@ -6,7 +6,9 @@ import {
   clearFlights,
   flightsReducer,
   setAlert,
+  setError,
   setFlights,
+  setLoading,
   setMessage,
   setSearchData,
 } from "./flightsSlice";
@@ -41,7 +43,9 @@ describe("flightsSlice reducer", () => {
   const initialState = {
     flights: [],
     message: "",
+    error: "",
     alert: null,
+    loading: false,
     searchData: initialSearchData,
   };
   test("setFlights should update the flights array", () => {
@@ -96,5 +100,19 @@ describe("flightsSlice reducer", () => {
       setSearchData(newSearchData)
     );
     expect(nextState.searchData).toEqual(newSearchData);
+  });
+
+  test("setError should set the error string", () => {
+  const error = "Something went wrong";
+  const nextState = flightsReducer(initialState, setError(error));
+  expect(nextState.error).toBe(error);
+  });
+
+  test("setLoading should toggle loading flag", () => {
+    const nextState = flightsReducer(initialState, setLoading(true));
+    expect(nextState.loading).toBe(true);
+
+    const finalState = flightsReducer(nextState, setLoading(false));
+    expect(finalState.loading).toBe(false);
   });
 });
