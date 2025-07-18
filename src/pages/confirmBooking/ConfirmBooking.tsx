@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FlightCard } from "../../components/FlightCard/FlightCard";
 import { clearFlights, setAlert } from "../../redux/flightsSlice";
 import "./ConfirmBooking.css";
+import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
+import { useState } from "react";
 
 export const ConfirmBooking = () => {
   const { state } = useLocation();
@@ -13,12 +15,14 @@ export const ConfirmBooking = () => {
   const total = flight.price * flight.travellers_count;
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleConfirmBooking = async () => {
+    setLoading(true);
     const payload = {
       flight: {
         flight_number: flight.flight_number,
-        departure_date: `${flight.departure_date}T${flight.departure_time}`,
+        departure_date: `${flight.departure_date} ${flight.departure_time}:00`,
         class_type: flight.class_type,
         travellers_count: flight.travellers_count,
       },
@@ -48,22 +52,30 @@ export const ConfirmBooking = () => {
           setAlert({ type: "failure", message: `❌ ${result.message}` })
         );
       }
-    } catch {
+    } 
+    catch {
       dispatch(
         setAlert({
           type: "failure",
           message: "❌ Network error. Please try again.",
         })
       );
-    } finally {
+    } 
+    finally {
       dispatch(clearFlights());
+      setLoading(false);
       navigate("/");
     }
   };
 
   return (
     <div className="booking-page">
-      <div className="booking-content">
+
+      {loading &&<div className="loading-container">
+        <LoadingSpinner />
+       </div>
+       }
+      <div className={`booking-content ${loading ? "blurred" : ""}`}>
         <div className="booking-header">
           <h1>Confirm Your Flight</h1>
         </div>

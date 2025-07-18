@@ -5,6 +5,18 @@
   padding: 100px 0px;
 }
 
+.loading-container{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .booking-content {
   font-family: 'Poppins', sans-serif;
   max-width: 900px;
@@ -84,4 +96,9 @@
 
 .confirm-button:hover {
   background-color: #ff6b35;
+}
+
+.blurred {
+  pointer-events: none;
+  opacity: 0.4;
 }
