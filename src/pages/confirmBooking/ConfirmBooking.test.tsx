@@ -47,6 +47,8 @@ const createMockStore = () =>
         flights: [],
         message: "",
         alert: null,
+        error:'',
+        loading: false,
         searchData: {
           selectedDate: new Date().toISOString().split("T")[0],
           source: "",
