@@ -16,13 +16,17 @@ export interface SearchData {
 interface FlightsState {
   flights: Flight[];
   message: string;
+  error: string;
   alert: Alert | null;
   searchData: SearchData;
+  loading: boolean;
 }
 const initialState: FlightsState = {
   flights: [],
   message: "",
   alert: null,
+  error: "",
+  loading: false,
   searchData: {
     selectedDate: new Date().toISOString().split("T")[0],
     source: "",
@@ -40,6 +44,9 @@ const flightsSlice = createSlice({
     },
     clearFlights(state) {
       state.flights = [];
+    },
+    setError(state, action: PayloadAction<string>) {
+      state.error = action.payload;
     },
     setMessage(state, action: PayloadAction<string>) {
       state.message = action.payload;
@@ -59,6 +66,9 @@ const flightsSlice = createSlice({
         ...action.payload,
       };
     },
+    setLoading(state, action) {
+      state.loading = action.payload;
+    },
   },
 });
 export const {
@@ -68,5 +78,7 @@ export const {
   clearAlert,
   clearFlights,
   setSearchData,
+  setError,
+  setLoading
 } = flightsSlice.actions;
 export const flightsReducer = flightsSlice.reducer;
