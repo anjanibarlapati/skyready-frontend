@@ -1,12 +1,15 @@
 
 import { useDispatch } from "react-redux";
-import { setFlights, setMessage, type SearchData } from "../redux/flightsSlice";
+import { clearFlights, setError, setFlights, setMessage, type SearchData } from "../redux/flightsSlice";
 
 export const useFetchFlights = () => {
   const dispatch = useDispatch();
 
   const fetchFlights = async (searchData: SearchData) => {
     try {
+      dispatch(clearFlights());
+      dispatch(setMessage(""));
+      dispatch(setError(""));
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/v1/flights/search`,
         {
@@ -29,12 +32,14 @@ export const useFetchFlights = () => {
       if (response.ok) {
         dispatch(setFlights(result.flights));
       } else {
-        dispatch(setFlights([]));
-        dispatch(setMessage(result.message || "Failed to fetch flights."));
+        if ( response.status === 409 ) {
+          dispatch(setMessage(result.message || "No flights found"));
+        } else {
+          dispatch(setError(result.message || "Failed to fetch flights"));
+        }
       }
     } catch {
-      dispatch(setFlights([]));
-      dispatch(setMessage("Something went wrong while fetching flights."));
+      dispatch(setError("Something went wrong while fetching flights"));
     } finally {
        document.getElementById('flight-results')?.scrollIntoView({ behavior: 'smooth' });
     }
