@@ -85,7 +85,7 @@ describe("flightsSlice reducer", () => {
     );
     expect(nextState.searchData.source).toBe("Delhi");
     expect(nextState.searchData.destination).toBe("Mumbai");
-    expect(nextState.searchData.classType).toBe(initialSearchData.classType); // unchanged
+    expect(nextState.searchData.classType).toBe(initialSearchData.classType);
   });
   test("setSearchData should replace full searchData if provided", () => {
     const newSearchData = {
