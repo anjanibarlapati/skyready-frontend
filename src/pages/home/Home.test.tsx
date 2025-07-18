@@ -9,8 +9,10 @@ import type { Flight } from '../../components/flight_result/FlightResult';
 
 const renderHomeWithState = async (
   flights: Flight[],
+  alert: Alert | null = null,
   message = '',
-  alert: Alert | null = null
+  loading: boolean = false,
+  error = ''
 ) => {
   const mockStore = configureStore({
     reducer: {
@@ -20,6 +22,8 @@ const renderHomeWithState = async (
       flights: {
         flights,
         message,
+        error,
+        loading,
         alert,
         searchData: {
           selectedDate: new Date().toISOString().split("T")[0],
@@ -43,20 +47,17 @@ const renderHomeWithState = async (
 
 };
 
-
 describe('Home component', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: vi.fn().mockResolvedValue(['Delhi', 'Mumbai', 'Bengaluru']),
     }));
-
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
-
 
   test('renders flight results if flights are available', async () => {
     await renderHomeWithState([
@@ -78,31 +79,38 @@ describe('Home component', () => {
       },
     ]);
 
-
     expect(screen.getByText(/Available Flights/i)).toBeInTheDocument();
     expect(screen.getByText(/Air India/i)).toBeInTheDocument();
   });
 
   test('renders message if no flights are found', async () => {
-    await renderHomeWithState([], 'No flights found for the selected route');
+    await renderHomeWithState([], null, 'No flights found for the selected route');
     expect(screen.getByText(/No flights found/i)).toBeInTheDocument();
   });
 
-  test('does not render flight result container if no flights or message', async () => {
+  test('does not render flight result container if no flights, message, or error', async () => {
     await renderHomeWithState([]);
     expect(screen.queryByText(/Available Flights/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/No flights found/i)).not.toBeInTheDocument();
+  });
+
+  test('shows error message if error is present', async () => {
+    await renderHomeWithState([], null, '', false,  'Internal server error');
+    expect(screen.getByText(/Internal server error/i)).toBeInTheDocument();
+  });
+
+  test('shows loading spinner when loading is true', async () => {
+    await renderHomeWithState([], null, '', true);
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
   });
 
   test('shows success alert and hides it after timeout', async () => {
-    await renderHomeWithState([], '', { type: 'success', message: 'Booking confirmed!' });
-
+    await renderHomeWithState([], { type: 'success', message: 'Booking confirmed!' } , '', false);
     expect(screen.getByText(/Booking confirmed!/i)).toBeInTheDocument();
   });
 
-
   test('shows failure alert and hides it after timeout', async () => {
-    await renderHomeWithState([], '', { type: 'failure', message: 'Booking failed!' });
-
+    await renderHomeWithState([], { type: 'failure', message: 'Booking failed!' }, '', false, );
     expect(screen.getByText(/Booking failed!/i)).toBeInTheDocument();
   });
 });
