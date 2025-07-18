@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import "./DateNavigator.css";
 import type { RootState } from "../../redux/store";
 import { useFetchFlights } from "../../hooks/useFetchFlights";
-import { setSearchData } from "../../redux/flightsSlice";
+import { setLoading, setSearchData } from "../../redux/flightsSlice";
 
 export const DateNavigator: React.FC = () => {
   const { fetchFlights } = useFetchFlights();
@@ -14,22 +14,24 @@ export const DateNavigator: React.FC = () => {
     (state: RootState) => state.flights.searchData
   );
   const currentDate = new Date(searchData.selectedDate);
-  const changeDate = (days: number) => {
+
+  const changeDate = async (days: number) => {
     const newDate = new Date(currentDate);
     newDate.setDate(currentDate.getDate() + days);
-    if (newDate < today) {
-      return;
-    }
 
-    const formattedDate = newDate.toISOString().split("T")[0];
+    const formattedDate = newDate.toLocaleDateString("en-CA");
 
     const updatedSearchData = {
       ...searchData,
-      selectedDate: formattedDate,
+      selectedDate: `${formattedDate} 00:00:00`,
     };
-
     dispatch(setSearchData(updatedSearchData));
-    fetchFlights(updatedSearchData);
+    dispatch(setLoading(true));
+    try {
+      await fetchFlights(updatedSearchData);
+    } finally {
+      dispatch(setLoading(false));
+    }
   };
 
   const formatDate = (date: Date) =>
@@ -40,14 +42,16 @@ export const DateNavigator: React.FC = () => {
     });
 
   return (
-    <div className="date-nav-container">
-      <button className="nav-btn" onClick={() => changeDate(-1)}>
-        ←
-      </button>
-      <span className="current-date">{formatDate(currentDate)}</span>
-      <button className="nav-btn" onClick={() => changeDate(1)}>
-        →
-      </button>
-    </div>
+    <>
+      <div className="date-nav-container">
+        <button className="nav-btn" onClick={() => changeDate(-1)} disabled={currentDate.toLocaleDateString('en-IN') <= today.toLocaleDateString('en-IN')}>
+          ←
+        </button>
+        <span className="current-date">{formatDate(currentDate)}</span>
+        <button className="nav-btn" onClick={() => changeDate(1)}>
+          →
+        </button>
+      </div>
+    </>
   );
 };
