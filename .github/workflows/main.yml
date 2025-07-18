@@ -5,7 +5,7 @@ on:
   push:
     branches: 
       - main
-      - update/flight-search-feature
+      - update/seat-booking-feature
 
 env:
   VITE_BASE_URL: ${{vars.VITE_BASE_URL}}
