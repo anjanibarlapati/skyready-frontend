@@ -2,22 +2,24 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useFetchFlights } from "../../hooks/useFetchFlights";
 import {
-  setFlights,
-  setMessage,
+  clearFlights,
+  setError,
   setSearchData,
 } from "../../redux/flightsSlice";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
 import "./Search.css";
+import { LoadingSpinner } from "../LoadingSpinner/LoadingSpinner";
 
 export const Search = () => {
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toLocaleDateString("en-CA")
   );
   const [travellersCount, setTravellersCount] = useState(1);
   const [classType, setClassType] = useState("Economy");
   const [cities, setCities] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
   const { fetchFlights } = useFetchFlights();
@@ -48,7 +50,7 @@ export const Search = () => {
 
 
   const getFormattedDateTime = () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString("en-CA");
 
     const timePart =
       departureDate === today
@@ -60,7 +62,7 @@ export const Search = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(setMessage(""));
+    setLoading(true);
 
     const matchedSource = cities.find(
       (city) => city.toLowerCase() === source.toLowerCase()
@@ -70,14 +72,16 @@ export const Search = () => {
     );
 
     if (!matchedSource || !matchedDestination) {
-      dispatch(setFlights([]));
-      dispatch(setMessage("Please select valid cities."));
+      dispatch(clearFlights());
+      setLoading(false);
+      dispatch(setError("Please select valid cities."));
       return;
     }
 
     if (matchedSource === matchedDestination) {
-      dispatch(setFlights([]));
-      dispatch(setMessage("Source and destination cannot be same"));
+      dispatch(clearFlights());
+      setLoading(false);
+      dispatch(setError("Source and destination cannot be same"));
       return;
     }
 
@@ -92,10 +96,15 @@ export const Search = () => {
     };
 
     dispatch(setSearchData(searchParams));
-    await fetchFlights(searchParams);
+    try {
+      await fetchFlights(searchParams);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
+    <>
     <div className="search-main-container">
       <form onSubmit={handleSubmit}>
         <div className="search-container">
@@ -134,7 +143,7 @@ export const Search = () => {
                 name="departureDate"
                 className="date-picker"
                 value={departureDate}
-                min={new Date().toISOString().split("T")[0]}
+                min={new Date().toLocaleDateString("en-CA")}
                 onChange={(e) => setDepartureDate(e.target.value)}
               />
             </div>
@@ -194,5 +203,9 @@ export const Search = () => {
         </div>
       </form>
     </div>
+    {loading && (
+      <LoadingSpinner/>
+    )}
+    </>
   );
 };
