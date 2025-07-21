@@ -147,10 +147,7 @@ export const Search = () => {
                   value={departureDate}
                   min={new Date().toLocaleDateString("en-CA")}
                   max={
-                    new Date(new Date().setMonth(new Date().getMonth() + 2))
-                      .toISOString()
-                      .split("T")[0]
-                  }
+                    new Date(new Date().setMonth(new Date().getMonth() + 2)).toLocaleDateString("en-CA")}
                   onChange={(e) => setDepartureDate(e.target.value)}
                 />
               </div>

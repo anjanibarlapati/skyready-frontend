@@ -48,7 +48,7 @@ export const DateNavigator: React.FC = () => {
           ←
         </button>
         <span className="current-date">{formatDate(currentDate)}</span>
-        <button className="nav-btn" onClick={() => changeDate(1)}  disabled={currentDate >= new Date(new Date().setDate(today.getDate() + 7))}>
+        <button className="nav-btn" onClick={() => changeDate(1)}  disabled={currentDate.toLocaleDateString('en-IN') >= new Date(new Date().setDate(today.getDate() + 7)).toLocaleDateString('en-IN')}>
           →
         </button>
       </div>
