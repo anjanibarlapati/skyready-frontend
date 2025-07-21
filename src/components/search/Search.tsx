@@ -49,13 +49,12 @@ export const Search = () => {
     });
   };
 
-
   const getFormattedDateTime = () => {
     const today = new Date().toLocaleDateString("en-CA");
 
     const timePart =
       departureDate === today
-        ? new Date().toTimeString().slice(0, 8) 
+        ? new Date().toTimeString().slice(0, 8)
         : "00:00:00";
 
     return `${departureDate} ${timePart}`;
@@ -108,107 +107,110 @@ export const Search = () => {
 
   return (
     <>
-    <div className="search-main-container">
-      <form onSubmit={handleSubmit}>
-        <div className="search-container">
-          <div className="input-fields-row">
-            <div className="input-field">
-              <label htmlFor="source">Source</label>
-              <InputDropdown
-                id="source"
-                name="source"
-                placeholder="Enter source"
-                value={source}
-                options={cities}
-                onChange={setSource}
-                required={true}
-              />
-            </div>
-
-            <div className="input-field">
-              <label htmlFor="destination">Destination</label>
-              <InputDropdown
-                id="destination"
-                name="destination"
-                placeholder="Enter destination"
-                value={destination}
-                options={cities}
-                onChange={setDestination}
-                required={true}
-              />
-            </div>
-
-            <div className="input-field">
-              <label htmlFor="departureDate">Departure Date</label>
-              <input
-                type="date"
-                id="departureDate"
-                name="departureDate"
-                className="date-picker"
-                value={departureDate}
-                min={new Date().toLocaleDateString("en-CA")}
-                onChange={(e) => setDepartureDate(e.target.value)}
-              />
-            </div>
-
-            <div className="input-field">
-              <label htmlFor="travellers_count">Travellers</label>
-              <div className="traveller-counter">
-                <button
-                  type="button"
-                  className="counter-btn"
-                  onClick={() => handleTravellerChange(-1)}
-                  disabled={travellersCount <= 1}
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  id="travellers_count"
-                  name="travellers_count"
-                  min={1}
-                  max={9}
-                  value={travellersCount}
-                  readOnly
+      <div className="search-main-container">
+        <form onSubmit={handleSubmit}>
+          <div className="search-container">
+            <div className="input-fields-row">
+              <div className="input-field">
+                <label htmlFor="source">Source</label>
+                <InputDropdown
+                  id="source"
+                  name="source"
+                  placeholder="Enter source"
+                  value={source}
+                  options={cities}
+                  onChange={setSource}
+                  required={true}
                 />
-                <button
-                  type="button"
-                  className="counter-btn"
-                  onClick={() => handleTravellerChange(1)}
-                  disabled={travellersCount >= 9}
-                >
-                  +
-                </button>
               </div>
-            </div>
 
-            <div className="input-field">
-              <label htmlFor="class_type">Class Type</label>
-              <InputDropdown
-                id="class_type"
-                name="class_type"
-                placeholder="Select class type"
-                value={classType}
-                options={["Economy", "Second Class", "First Class"]}
-                onChange={setClassType}
-                disableFilter={true}
-              />
-            </div>
+              <div className="input-field">
+                <label htmlFor="destination">Destination</label>
+                <InputDropdown
+                  id="destination"
+                  name="destination"
+                  placeholder="Enter destination"
+                  value={destination}
+                  options={cities}
+                  onChange={setDestination}
+                  required={true}
+                />
+              </div>
 
-            <div className="input-field">
-              <div className="search-button-wrapper">
-                <button type="submit" className="search-button">
-                  Search
-                </button>
+              <div className="input-field">
+                <label htmlFor="departureDate">Departure Date</label>
+                <input
+                  type="date"
+                  id="departureDate"
+                  name="departureDate"
+                  className="date-picker"
+                  value={departureDate}
+                  min={new Date().toLocaleDateString("en-CA")}
+                  max={
+                    new Date(new Date().setMonth(new Date().getMonth() + 2))
+                      .toISOString()
+                      .split("T")[0]
+                  }
+                  onChange={(e) => setDepartureDate(e.target.value)}
+                />
+              </div>
+
+              <div className="input-field">
+                <label htmlFor="travellers_count">Travellers</label>
+                <div className="traveller-counter">
+                  <button
+                    type="button"
+                    className="counter-btn"
+                    onClick={() => handleTravellerChange(-1)}
+                    disabled={travellersCount <= 1}
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    id="travellers_count"
+                    name="travellers_count"
+                    min={1}
+                    max={9}
+                    value={travellersCount}
+                    readOnly
+                  />
+                  <button
+                    type="button"
+                    className="counter-btn"
+                    onClick={() => handleTravellerChange(1)}
+                    disabled={travellersCount >= 9}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="input-field">
+                <label htmlFor="class_type">Class Type</label>
+                <InputDropdown
+                  id="class_type"
+                  name="class_type"
+                  placeholder="Select class type"
+                  value={classType}
+                  options={["Economy", "Second Class", "First Class"]}
+                  onChange={setClassType}
+                  disableFilter={true}
+                />
+              </div>
+
+              <div className="input-field">
+                <div className="search-button-wrapper">
+                  <button type="submit" className="search-button">
+                    Search
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </form>
-    </div>
-    {loading && (
-      <LoadingSpinner/>
-    )}
+        </form>
+      </div>
+      {loading && <LoadingSpinner />}
     </>
   );
 };
