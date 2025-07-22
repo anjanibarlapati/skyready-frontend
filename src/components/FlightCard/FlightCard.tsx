@@ -7,6 +7,8 @@ import line from '../../assets/line-segment.png';
 
 type FlightCardProps = {
   flight: Flight;
+  symbol: string,
+  price: number,
 };
 
 const formatDate = (dateStr: string) => {
@@ -17,7 +19,7 @@ const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString("en-IN", options);
 };
 
-export const FlightCard = ({ flight }: FlightCardProps) => {
+export const FlightCard = ({ flight, symbol, price }: FlightCardProps) => {
 
   const [duration, setDuration] = useState("");
 
@@ -62,7 +64,7 @@ return (
 
       <div className="detailedPrice">
         <span className="detailedLabel">Price</span>
-        <span className="detailedValue">₹ {flight.price}</span>
+        <span className="detailedValue">{symbol} {price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
       </div>
     </div>
   </div>
