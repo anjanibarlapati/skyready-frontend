@@ -54,6 +54,10 @@ export const InputDropdown: React.FC<InputDropdownProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+      setInputValue(value || "");
+  }, [value]);
+
   return (
     <div
       className="input-dropdown"
