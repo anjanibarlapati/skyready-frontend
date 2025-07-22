@@ -1,12 +1,13 @@
 import {
   convertFromINR,
   detectCurrency,
+  formatCurrency,
   getCurrencySymbol,
   supportedCurrencies,
 } from "./currencyUtils";
 import { describe, expect, it } from "vitest";
 
-describe("convertFromINR", () => {
+describe("Convert from INR to selected currency", () => {
   it("should return same amount when converting INR to INR", () => {
     expect(convertFromINR(1000, "INR")).toBe(1000);
   });
@@ -24,7 +25,7 @@ describe("convertFromINR", () => {
   });
 });
 
-describe("detectCurrency", () => {
+describe("Detect currency", () => {
   it("should detect USD for country code 'US'", () => {
     expect(detectCurrency("US")).toBe("USD");
   });
@@ -38,7 +39,7 @@ describe("detectCurrency", () => {
   });
 });
 
-describe("getCurrencySymbol", () => {
+describe("Get currency symbol", () => {
   it("should return ₹ for INR", () => {
     expect(getCurrencySymbol("INR")).toBe("₹");
   });
@@ -57,3 +58,37 @@ describe("getCurrencySymbol", () => {
     }
   });
 });
+
+describe("Format currency", () => {
+  it("should format INR correctly (Indian comma style)", () => {
+    expect(formatCurrency(125000, "INR")).toBe("1,25,000");
+  });
+
+  it("should format USD correctly", () => {
+    expect(formatCurrency(125000, "USD")).toBe("125,000");
+  });
+
+  it("should format EUR correctly", () => {
+    expect(formatCurrency(125000, "EUR")).toBe("125.000");
+  });
+
+  it("should format GBP correctly", () => {
+    expect(formatCurrency(125000, "GBP")).toBe("125,000");
+  });
+
+  it("should format JPY correctly", () => {
+    expect(formatCurrency(125000, "JPY")).toBe("125,000");
+  });
+
+  it("should default to en-IN for unknown currency code", () => {
+    expect(formatCurrency(125000, "XYZ")).toBe("1,25,000");
+  });
+
+  it("should keep max 2 decimal digits", () => {
+    expect(formatCurrency(123456.789, "USD")).toBe("123,456.79");
+  });
+
+});
+
+
+
