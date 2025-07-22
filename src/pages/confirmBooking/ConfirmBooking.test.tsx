@@ -3,22 +3,33 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import {
-  clearFlights,
-  flightsReducer,
-  setAlert,
-} from "../../redux/flightsSlice";
+import { clearFlights, flightsReducer, setAlert } from "../../redux/flightsSlice";
 import { ConfirmBooking } from "./ConfirmBooking";
 
 const mockDispatch = vi.fn();
+const mockNavigate = vi.fn();
 
 vi.mock("react-redux", async () => {
-  const actual = await vi.importActual<typeof import("react-redux")>(
-    "react-redux"
-  );
+  const actual = await vi.importActual<typeof import("react-redux")>("react-redux");
   return {
     ...actual,
     useDispatch: () => mockDispatch,
+  };
+});
+
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
+  return {
+    ...actual,
+    useLocation: () => ({
+      state: {
+        flight: mockFlight,
+        price: 5000,
+        basePrice: 4500,
+        symbol: "₹",
+      },
+    }),
+    useNavigate: () => mockNavigate,
   };
 });
 
@@ -47,7 +58,7 @@ const createMockStore = () =>
         flights: [],
         message: "",
         alert: null,
-        error:'',
+        error: '',
         loading: false,
         searchData: {
           selectedDate: new Date().toISOString().split("T")[0],
@@ -63,11 +74,7 @@ const createMockStore = () =>
 const renderConfirmBooking = () => {
   return render(
     <Provider store={createMockStore()}>
-      <MemoryRouter
-        initialEntries={[
-          { pathname: "/confirm-booking", state: { flight: mockFlight } },
-        ]}
-      >
+      <MemoryRouter initialEntries={["/confirm-booking"]}>
         <Routes>
           <Route path="/" element={<div>Home Page</div>} />
           <Route path="/confirm-booking" element={<ConfirmBooking />} />
@@ -81,6 +88,7 @@ describe("ConfirmBooking Component", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     mockDispatch.mockClear();
+    mockNavigate.mockClear();
   });
 
   test("renders flight details and fare summary", async () => {
@@ -88,21 +96,19 @@ describe("ConfirmBooking Component", () => {
 
     expect(screen.getByText("Confirm Your Flight")).toBeInTheDocument();
     expect(screen.getByText("Fare Summary")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Confirm Booking/i })
-    ).toBeInTheDocument();
+    expect(screen.getByText("Base Fare")).toBeInTheDocument();
+    expect(screen.getByText("Taxes & Fees")).toBeInTheDocument();
+    expect(screen.getByText("Total")).toBeInTheDocument();
   });
 
   test("successful booking dispatches success alert and clears flights", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ message: "Booking successful" }),
-      })
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ message: "Booking successful" }),
+    }));
 
     renderConfirmBooking();
+
     fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
 
     await waitFor(() => {
@@ -113,36 +119,37 @@ describe("ConfirmBooking Component", () => {
         })
       );
       expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
   test("failed booking dispatches failure alert", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        json: async () => ({ message: "Booking failed" }),
-      })
-    );
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: false,
+      json: async () => ({ message: "Booking failed" }),
+    }));
 
     renderConfirmBooking();
+
     fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
 
     await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith(
-        setAlert({ type: "failure", message: "❌ Booking failed" })
+        setAlert({
+          type: "failure",
+          message: "❌ Booking failed",
+        })
       );
       expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
   test("network error shows fallback alert", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockRejectedValue(new Error("Network error"))
-    );
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
 
     renderConfirmBooking();
+
     fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
 
     await waitFor(() => {
@@ -153,6 +160,7 @@ describe("ConfirmBooking Component", () => {
         })
       );
       expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
+      expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 });
