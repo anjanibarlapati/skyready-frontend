@@ -3,12 +3,14 @@ import type { Flight } from "../flight_result/FlightResult";
 import { journeyDuration } from "../../utils/journeyDuration";
 import { useEffect, useState } from "react";
 import line from '../../assets/line-segment.png';
+import { formatCurrency } from "../../utils/currencyUtils";
 
 
 type FlightCardProps = {
   flight: Flight;
   symbol: string,
   price: number,
+  currency: string,
 };
 
 const formatDate = (dateStr: string) => {
@@ -19,7 +21,7 @@ const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString("en-IN", options);
 };
 
-export const FlightCard = ({ flight, symbol, price }: FlightCardProps) => {
+export const FlightCard = ({ flight, symbol, price, currency }: FlightCardProps) => {
 
   const [duration, setDuration] = useState("");
 
@@ -64,7 +66,7 @@ return (
 
       <div className="detailedPrice">
         <span className="detailedLabel">Price</span>
-        <span className="detailedValue">{symbol} {price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+        <span className="detailedValue">{symbol} {formatCurrency(price, currency)}</span>
       </div>
     </div>
   </div>

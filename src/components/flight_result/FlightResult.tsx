@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./FlightResult.css";
-import { convertFromINR, getCurrencySymbol } from "../../utils/currencyUtils";
+import { convertFromINR, formatCurrency, getCurrencySymbol } from "../../utils/currencyUtils";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
 
@@ -37,7 +37,7 @@ export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
   const navigate = useNavigate();
   const handleBook = () => {
     const basePrice = convertFromINR(flight.base_price, currency);
-    navigate("/confirm-booking", { state: { flight: flight, price: convertedPrice, basePrice: basePrice, symbol: symbol } });
+    navigate("/confirm-booking", { state: { flight: flight, price: convertedPrice, basePrice: basePrice, symbol: symbol, currency: currency } });
   };
 
   
@@ -81,7 +81,7 @@ export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
 
             <div className="flight-price">
               <span className="price-label">Price</span>
-              <span className="price-value"> {symbol} {convertedPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+              <span className="price-value"> {symbol} {formatCurrency(convertedPrice, currency)}</span>
             </div>
 
             <div className="book-button-container" onClick={handleBook}>

@@ -100,6 +100,7 @@ describe("FlightResult component", () => {
         price: 3500,
         basePrice: 3000,
         symbol: "₹",
+        currency: 'INR'
       },
     });
   });
@@ -118,11 +119,12 @@ describe("FlightResult component", () => {
         price: expectedPrice,
         basePrice: expectedBasePrice,
         symbol: "$",
+        currency: 'USD'
       },
     });
 
     expect(
-      screen.getByText(`$ ${expectedPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)
+      screen.getByText(`$ ${expectedPrice.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`)
     ).toBeInTheDocument();
   });
 });
