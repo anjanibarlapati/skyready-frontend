@@ -11,7 +11,7 @@ const INR_TO_CURRENCY: Record<string, number> = {
   USD: 0.0116,
   EUR: 0.011,
   GBP: 0.0095,
-  JPY: 1.7,
+  JPY: 1.71,
 };
 
 export function convertFromINR(amount: number, to: string): number {
@@ -34,4 +34,29 @@ export function detectCurrency(countryCode: string): string {
 
 export function getCurrencySymbol(code: string): string {
   return supportedCurrencies.find((c) => c.code === code)?.symbol || "₹";
+}
+
+function getLocaleForCurrency(currencyCode: string): string {
+  switch (currencyCode) {
+    case "INR":
+      return "en-IN";
+    case "USD":
+      return "en-US";
+    case "EUR":
+      return "de-DE";
+    case "GBP":
+      return "en-GB";
+    case "JPY":
+      return "ja-JP";
+    default:
+      return "en-IN";
+  }
+}
+
+export function formatCurrency(amount: number, currencyCode: string): string {
+  const locale = getLocaleForCurrency(currencyCode);
+  
+  return `${amount.toLocaleString(locale, {
+    maximumFractionDigits: 2,
+  })}`;
 }
