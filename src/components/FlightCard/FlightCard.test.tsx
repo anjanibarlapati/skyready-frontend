@@ -20,44 +20,53 @@ const mockFlight: Flight = {
   class_type: 'Economy',
 };
 
+const symbol = '₹';
+const price = 5200;
+
 describe('FlightCard', () => {
   test('renders airline name and flight number', () => {
-    render(<FlightCard flight={mockFlight} />);
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
     expect(screen.getByText('IndiGo')).toBeInTheDocument();
     expect(screen.getByText('6E123')).toBeInTheDocument();
   });
 
   test('renders source and destination cities', () => {
-    render(<FlightCard flight={mockFlight} />);
-    expect(screen.getAllByText('Delhi')[0]).toBeInTheDocument();
-    expect(screen.getAllByText('Mumbai')[0]).toBeInTheDocument();
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
+    expect(screen.getByText('Delhi')).toBeInTheDocument();
+    expect(screen.getByText('Mumbai')).toBeInTheDocument();
   });
 
   test('renders formatted departure and arrival dates', () => {
-    render(<FlightCard flight={mockFlight} />);
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
     expect(screen.getAllByText('18 Jul').length).toBeGreaterThanOrEqual(1);
   });
 
   test('renders departure and arrival times', () => {
-    render(<FlightCard flight={mockFlight} />);
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
     expect(screen.getByText('14:30')).toBeInTheDocument();
     expect(screen.getByText('16:45')).toBeInTheDocument();
   });
 
-  test('renders price with ₹ symbol', () => {
-    render(<FlightCard flight={mockFlight} />);
-    expect(screen.getByText(/₹ 5200/)).toBeInTheDocument();
+  test('renders currency symbol with formatted price', () => {
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
+    expect(screen.getByText('₹ 5,200')).toBeInTheDocument();
   });
 
-  test('renders duration label', async () => {
-    render(<FlightCard flight={mockFlight} />);
+  test('renders calculated duration', async () => {
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
     expect(await screen.findByText(/2h 15m|02h 15m/i)).toBeInTheDocument();
   });
 
-  test('renders journey path line image', () => {
-    render(<FlightCard flight={mockFlight} />);
-    const lineImg = screen.getByAltText('line');
-    expect(lineImg).toBeInTheDocument();
-    expect(lineImg.tagName).toBe('IMG');
+  test('renders line image', () => {
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
+    const img = screen.getByAltText('line');
+    expect(img).toBeInTheDocument();
+    expect(img.tagName).toBe('IMG');
+  });
+
+  test('renders label and value for price', () => {
+    render(<FlightCard flight={mockFlight} symbol={symbol} price={price} />);
+    expect(screen.getByText('Price')).toBeInTheDocument();
+    expect(screen.getByText('₹ 5,200')).toBeInTheDocument();
   });
 });
