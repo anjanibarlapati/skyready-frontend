@@ -228,6 +228,24 @@ describe("Search component", () => {
     expect(input.value).toBe("9");
   });
 
+  test("swaps source and destination when swap icon is clicked", async () => {
+    renderSearchForm();
+    await waitFor(() => screen.getByLabelText(/Source/i));
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
+      target: { value: "Delhi" },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
+      target: { value: "Mumbai" },
+    });
+
+    const swapIcon = screen.getByAltText(/swap-icon/i);
+    fireEvent.click(swapIcon);
+
+    expect(screen.getByPlaceholderText(/Enter source/i)).toHaveValue("Mumbai");
+    expect(screen.getByPlaceholderText(/Enter destination/i)).toHaveValue("Delhi");
+  });
+
   test("handles fetch rejection during mount", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce("City fetch failed"));
     renderSearchForm();
