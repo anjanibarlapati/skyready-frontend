@@ -7,12 +7,12 @@ import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
 import { useState } from "react";
 
 export const ConfirmBooking = () => {
-  const { state } = useLocation();
-  const flight = state.flight;
+    const location = useLocation();
+    const { flight, price, basePrice, symbol } = location.state;
 
-  const baseFare = flight.price * flight.travellers_count;
-  const taxes = (flight.price - flight.base_price) * flight.travellers_count;
-  const total = flight.price * flight.travellers_count;
+  const baseFare = basePrice * flight.travellers_count;
+  const taxes = (price - basePrice) * flight.travellers_count;
+  const total = price * flight.travellers_count;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -81,25 +81,25 @@ export const ConfirmBooking = () => {
         </div>
 
         <div className="booking-details-container">
-          <FlightCard flight={flight} />
+          <FlightCard flight={flight} symbol={symbol} price={price} />
           <div className="fare-summary-card">
             <h2>Fare Summary</h2>
 
             <div className="fare-line">
               <span>Base Fare</span>
-              <span>₹ {baseFare}</span>
+              <span>{symbol} {baseFare.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
             </div>
 
             <div className="fare-line">
               <span>Taxes & Fees</span>
-              <span>₹ {taxes}</span>
+              <span>{symbol} {taxes.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
             </div>
 
             <hr />
 
             <div className="fare-line total">
               <strong>Total</strong>
-              <strong>₹ {total}</strong>
+              <strong>{symbol} {total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
             </div>
           </div>
         </div>
