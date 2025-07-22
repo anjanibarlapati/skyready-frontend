@@ -6,17 +6,21 @@ import { flightsReducer, type Alert } from '../../redux/flightsSlice';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { Flight } from '../../components/flight_result/FlightResult';
+import { currencyReducer } from '../../redux/currencySlice';
 
 const renderHomeWithState = async (
   flights: Flight[],
   alert: Alert | null = null,
   message = '',
   loading: boolean = false,
-  error = ''
+  error = '',
+  currency: string = 'INR'
 ) => {
   const mockStore = configureStore({
     reducer: {
       flights: flightsReducer,
+      currency: currencyReducer,
+
     },
     preloadedState: {
       flights: {
@@ -32,6 +36,9 @@ const renderHomeWithState = async (
           travellersCount: 1,
           classType: "Economy",
         },
+      },
+      currency: {
+        currency,
       },
     },
   });
