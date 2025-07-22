@@ -2,6 +2,9 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, test, expect, vi } from "vitest";
 import { FlightResult, type Flight } from "./FlightResult";
 import { MemoryRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import { currencyReducer } from "../../redux/currencySlice";
 
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
@@ -29,17 +32,28 @@ const mockFlight: Flight = {
   class_type: "Economy",
 };
 
-const renderWithRouter = (flight: Flight) => {
+const renderWithProviders = (flight: Flight, currency: string = "INR") => {
+  const store = configureStore({
+    reducer: {
+      currency: currencyReducer,
+    },
+    preloadedState: {
+      currency: { currency },
+    },
+  });
+
   render(
-    <MemoryRouter>
-      <FlightResult flight={flight} />
-    </MemoryRouter>
+    <Provider store={store}>
+      <MemoryRouter>
+        <FlightResult flight={flight} />
+      </MemoryRouter>
+    </Provider>
   );
 };
 
 describe("FlightResult component", () => {
   test("renders all flight details correctly", () => {
-    renderWithRouter(mockFlight);
+    renderWithProviders(mockFlight);
 
     expect(screen.getByText("IndiGo")).toBeInTheDocument();
     expect(screen.getByText("6E123")).toBeInTheDocument();
@@ -59,7 +73,7 @@ describe("FlightResult component", () => {
       arrival_date_difference: undefined,
     };
 
-    renderWithRouter(flightWithoutDateDiff);
+    renderWithProviders(flightWithoutDateDiff);
 
     expect(screen.queryByText("+1 day")).not.toBeInTheDocument();
   });
@@ -70,22 +84,45 @@ describe("FlightResult component", () => {
       price: 125000,
     };
 
-    renderWithRouter(expensiveFlight);
+    renderWithProviders(expensiveFlight);
 
     expect(screen.getByText("₹ 1,25,000")).toBeInTheDocument();
   });
 
-  test("renders the Book button", () => {
-    renderWithRouter(mockFlight);
-    expect(screen.getByRole("button", { name: "Book" })).toBeInTheDocument();
-  });
+  test("navigates to /confirm-booking with correct state on Book button click", () => {
+    renderWithProviders(mockFlight);
 
-    test("navigates to /confirm-booking with flight state on Book button click", () => {
-    renderWithRouter(mockFlight);
     fireEvent.click(screen.getByRole("button", { name: "Book" }));
 
     expect(mockNavigate).toHaveBeenCalledWith("/confirm-booking", {
-      state: { flight: mockFlight },
+      state: {
+        flight: mockFlight,
+        price: 3500,
+        basePrice: 3000,
+        symbol: "₹",
+      },
     });
+  });
+
+  test("uses correct currency and conversion when selected currency is USD", () => {
+    renderWithProviders(mockFlight, "USD");
+
+    const expectedPrice = 3500 * 0.0116;
+    const expectedBasePrice = 3000 * 0.0116;
+
+    fireEvent.click(screen.getByRole("button", { name: "Book" }));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/confirm-booking", {
+      state: {
+        flight: mockFlight,
+        price: expectedPrice,
+        basePrice: expectedBasePrice,
+        symbol: "$",
+      },
+    });
+
+    expect(
+      screen.getByText(`$ ${expectedPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`)
+    ).toBeInTheDocument();
   });
 });
