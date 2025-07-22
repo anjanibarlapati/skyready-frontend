@@ -14,6 +14,7 @@ import { detectCurrency, supportedCurrencies } from "../../utils/currencyUtils";
 import { setCurrency } from "../../redux/currencySlice";
 import type { RootState } from "../../redux/store";
 import dropdown from "../../assets/dropdown.png";
+import swapIcon from '../../assets/swap.png';
 
 
 
@@ -128,6 +129,11 @@ export const Search = () => {
     }
   };
 
+  const handleSwap = () => {
+    setSource(destination);
+    setDestination(source);
+  };
+
   return (
     <>
       <div className="search-main-container">
@@ -155,30 +161,41 @@ export const Search = () => {
 
           <form onSubmit={handleSubmit}>
               <div className="input-fields-row">
-                <div className="input-field">
-                  <label htmlFor="source">Source</label>
-                  <InputDropdown
-                    id="source"
-                    name="source"
-                    placeholder="Enter source"
-                    value={source}
-                    options={cities}
-                    onChange={setSource}
-                    required={true}
-                  />
-                </div>
+                <div className="source-destination-wrapper">
+                  <div className="input-field">
+                    <label htmlFor="source">Source</label>
+                    <InputDropdown
+                      id="source"
+                      name="source"
+                      placeholder="Enter source"
+                      value={source}
+                      options={cities}
+                      onChange={setSource}
+                      required={true}
+                    />
+                  </div>
 
-                <div className="input-field">
-                  <label htmlFor="destination">Destination</label>
-                  <InputDropdown
-                    id="destination"
-                    name="destination"
-                    placeholder="Enter destination"
-                    value={destination}
-                    options={cities}
-                    onChange={setDestination}
-                    required={true}
-                  />
+                  <div className="swap-icon-wrapper">
+                    <img
+                      src={swapIcon}
+                      alt="swap-icon"
+                      className="swap-icon"
+                      onClick={handleSwap}
+                    />
+                  </div>
+
+                  <div className="input-field">
+                    <label htmlFor="destination">Destination</label>
+                    <InputDropdown
+                      id="destination"
+                      name="destination"
+                      placeholder="Enter destination"
+                      value={destination}
+                      options={cities}
+                      onChange={setDestination}
+                      required={true}
+                    />
+                  </div>
                 </div>
 
                 <div className="input-field">
