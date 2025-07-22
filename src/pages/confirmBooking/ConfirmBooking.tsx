@@ -5,10 +5,11 @@ import { clearFlights, setAlert } from "../../redux/flightsSlice";
 import "./ConfirmBooking.css";
 import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
 import { useState } from "react";
+import { formatCurrency } from "../../utils/currencyUtils";
 
 export const ConfirmBooking = () => {
     const location = useLocation();
-    const { flight, price, basePrice, symbol } = location.state;
+    const { flight, price, basePrice, symbol, currency } = location.state;
 
   const baseFare = basePrice * flight.travellers_count;
   const taxes = (price - basePrice) * flight.travellers_count;
@@ -81,25 +82,25 @@ export const ConfirmBooking = () => {
         </div>
 
         <div className="booking-details-container">
-          <FlightCard flight={flight} symbol={symbol} price={price} />
+          <FlightCard flight={flight} symbol={symbol} price={price} currency={currency}/>
           <div className="fare-summary-card">
             <h2>Fare Summary</h2>
 
             <div className="fare-line">
               <span>Base Fare</span>
-              <span>{symbol} {baseFare.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+              <span>{symbol} {formatCurrency(baseFare, currency)}</span>
             </div>
 
             <div className="fare-line">
               <span>Taxes & Fees</span>
-              <span>{symbol} {taxes.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+              <span>{symbol} {formatCurrency(taxes, currency)}</span>
             </div>
 
             <hr />
 
             <div className="fare-line total">
               <strong>Total</strong>
-              <strong>{symbol} {total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
+              <strong>{symbol} {formatCurrency(total, currency)}</strong>
             </div>
           </div>
         </div>
