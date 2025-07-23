@@ -31,6 +31,7 @@ const renderHomeWithState = async (
         alert,
         searchData: {
           selectedDate: new Date().toISOString().split("T")[0],
+          departureDate: new Date().toISOString().split("T")[0],
           source: "",
           destination: "",
           travellersCount: 1,
