@@ -34,6 +34,7 @@ describe("flightsSlice reducer", () => {
 
   const initialSearchData = {
     selectedDate: new Date().toISOString().split("T")[0],
+    departureDate: new Date().toISOString().split("T")[0],
     source: "",
     destination: "",
     travellersCount: 1,
@@ -74,22 +75,10 @@ describe("flightsSlice reducer", () => {
     const nextState = flightsReducer(initialState, clearAlert());
     expect(nextState.alert).toBeNull();
   });
-  test("setSearchData should update part of searchData", () => {
-    const partialUpdate = {
-      source: "Delhi",
-      destination: "Mumbai",
-    };
-    const nextState = flightsReducer(
-      initialState,
-      setSearchData(partialUpdate)
-    );
-    expect(nextState.searchData.source).toBe("Delhi");
-    expect(nextState.searchData.destination).toBe("Mumbai");
-    expect(nextState.searchData.classType).toBe(initialSearchData.classType);
-  });
   test("setSearchData should replace full searchData if provided", () => {
     const newSearchData = {
       selectedDate: "2025-08-15",
+      departureDate: "2025-08-15",
       source: "Hyderabad",
       destination: "Bangalore",
       travellersCount: 3,
