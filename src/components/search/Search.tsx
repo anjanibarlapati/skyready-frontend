@@ -73,16 +73,6 @@ export const Search = () => {
     });
   };
 
-  const getFormattedDateTime = () => {
-    const today = new Date().toLocaleDateString("en-CA");
-
-    const timePart =
-      departureDate === today
-        ? new Date().toTimeString().slice(0, 8)
-        : "00:00:00";
-
-    return `${departureDate} ${timePart}`;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,11 +101,10 @@ export const Search = () => {
       return;
     }
 
-    const selectedDateTime = getFormattedDateTime();
 
     const searchParams = {
-      selectedDate: selectedDateTime,
-      departureDate: selectedDateTime,
+      selectedDate: departureDate,
+      departureDate: departureDate,
       source,
       destination,
       travellersCount,

@@ -33,6 +33,7 @@ const createMockStore = () =>
           source: "",
           destination: "",
           selectedDate: "",
+          departureDate:'',
           travellersCount: 1,
           classType: "Economy",
         },
@@ -117,6 +118,7 @@ describe("Search component", () => {
             alert: null,
             searchData: {
               selectedDate: "",
+              departureDate: "",
               source: "",
               destination: "",
               travellersCount: 1,
