@@ -115,6 +115,7 @@ export const Search = () => {
 
     const searchParams = {
       selectedDate: selectedDateTime,
+      departureDate: selectedDateTime,
       source,
       destination,
       travellersCount,
