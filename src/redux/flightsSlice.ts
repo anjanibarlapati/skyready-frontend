@@ -12,7 +12,7 @@ export interface SearchData {
   destination: string;
   travellersCount: number;
   classType: string;
-  departureDate?: string;
+  departureDate: string;
 }
 interface FlightsState {
   flights: Flight[];
@@ -29,8 +29,8 @@ const initialState: FlightsState = {
   error: "",
   loading: false,
   searchData: {
-    selectedDate: new Date().toISOString().split("T")[0],
-    departureDate: new Date().toISOString().split("T")[0],
+    selectedDate: new Date().toLocaleDateString("en-CA").split("T")[0],
+    departureDate: new Date().toLocaleDateString("en-CA").split("T")[0],
     source: "",
     destination: "",
     travellersCount: 1,
@@ -59,17 +59,8 @@ const flightsSlice = createSlice({
     clearAlert(state) {
       state.alert = null;
     },
-    setSearchData(
-      state,
-      action
-    ) {
-       const { selectedDate, ...rest } = action.payload;
-      state.searchData = {
-        ...state.searchData,
-       ...rest,
-       selectedDate,
-        departureDate: rest.departureDate ?? state.searchData.departureDate,
-      };
+    setSearchData( state, action: PayloadAction<SearchData> ) {
+      state.searchData = action.payload
     },
     setLoading(state, action) {
       state.loading = action.payload;
