@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import "./DateNavigator.css";
-import type { RootState } from "../../redux/store";
 import { useFetchFlights } from "../../hooks/useFetchFlights";
 import { setLoading, setSearchData } from "../../redux/flightsSlice";
+import type { RootState } from "../../redux/store";
+import "./DateNavigator.css";
 
 const startOfDay = (date: Date) => {
   const d = new Date(date);

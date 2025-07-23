@@ -1,11 +1,11 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { DateNavigator } from "./DateNavigator";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
-  setSearchData,
   setLoading,
+  setSearchData,
   type SearchData,
 } from "../../redux/flightsSlice";
+import { DateNavigator } from "./DateNavigator";
 
 const mockDispatch = vi.fn();
 const mockFetchFlights = vi.fn();

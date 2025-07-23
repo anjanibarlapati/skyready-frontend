@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import dropdown from "../../assets/dropdown.png";
+import swapIcon from '../../assets/swap.png';
 import { useFetchFlights } from "../../hooks/useFetchFlights";
+import { setCurrency } from "../../redux/currencySlice";
 import {
   clearFlights,
   setError,
   setMessage,
   setSearchData,
 } from "../../redux/flightsSlice";
-import { InputDropdown } from "../input_dropdown/InputDropdown";
-import "./Search.css";
-import { LoadingSpinner } from "../LoadingSpinner/LoadingSpinner";
-import { detectCurrency, supportedCurrencies } from "../../utils/currencyUtils";
-import { setCurrency } from "../../redux/currencySlice";
 import type { RootState } from "../../redux/store";
-import dropdown from "../../assets/dropdown.png";
-import swapIcon from '../../assets/swap.png';
+import { detectCurrency, supportedCurrencies } from "../../utils/currencyUtils";
+import { InputDropdown } from "../input_dropdown/InputDropdown";
+import { LoadingSpinner } from "../LoadingSpinner/LoadingSpinner";
+import "./Search.css";
 
 
 
