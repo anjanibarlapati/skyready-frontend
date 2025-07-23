@@ -27,6 +27,7 @@ describe("useFetchFlights hook", () => {
     source: "Delhi",
     destination: "Mumbai",
     selectedDate: "2025-07-19",
+    departureDate: "2025-07-19",
     travellersCount: 2,
     classType: "Economy",
   };
