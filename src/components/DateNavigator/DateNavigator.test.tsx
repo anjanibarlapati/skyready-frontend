@@ -1,7 +1,11 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { DateNavigator } from "./DateNavigator";
-import { setSearchData, setLoading, type SearchData } from "../../redux/flightsSlice";
+import {
+  setSearchData,
+  setLoading,
+  type SearchData,
+} from "../../redux/flightsSlice";
 
 const mockDispatch = vi.fn();
 const mockFetchFlights = vi.fn();
@@ -14,7 +18,9 @@ const formatForSearchData = (date: Date) =>
 let mockedSelectedDate = formatForSearchData(today);
 
 vi.mock("react-redux", async () => {
-  const actual = await vi.importActual<typeof import("react-redux")>("react-redux");
+  const actual = await vi.importActual<typeof import("react-redux")>(
+    "react-redux"
+  );
   return {
     ...actual,
     useDispatch: () => mockDispatch,
@@ -90,7 +96,7 @@ describe("DateNavigator", () => {
   test("clicking previous date dispatches updated search data and fetches flights", async () => {
     const futureDate = new Date(today);
     futureDate.setDate(today.getDate() + 1);
-    mockedSelectedDate = formatForSearchData(futureDate); 
+    mockedSelectedDate = formatForSearchData(futureDate);
 
     render(<DateNavigator />);
 
@@ -107,6 +113,38 @@ describe("DateNavigator", () => {
         expect.objectContaining({ selectedDate: expectedDate })
       );
       expect(mockDispatch).toHaveBeenCalledWith(setLoading(false));
+    });
+  });
+  test("does NOT dispatch or fetch if clicking previous when date is at minDate", async () => {
+    render(<DateNavigator />);
+
+    const prevBtn = screen.getByText("←");
+    fireEvent.click(prevBtn);
+
+    await waitFor(() => {
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        setSearchData(expect.anything())
+      );
+      expect(mockFetchFlights).not.toHaveBeenCalled();
+    });
+  });
+
+  test("does NOT dispatch or fetch if clicking next when date is at maxDate", async () => {
+    const maxDate = new Date(today);
+    maxDate.setMonth(maxDate.getMonth() + 2);
+
+    mockedSelectedDate = formatForSearchData(maxDate);
+
+    render(<DateNavigator />);
+
+    const nextBtn = screen.getByText("→");
+    fireEvent.click(nextBtn);
+
+    await waitFor(() => {
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        setSearchData(expect.anything())
+      );
+      expect(mockFetchFlights).not.toHaveBeenCalled();
     });
   });
 });
