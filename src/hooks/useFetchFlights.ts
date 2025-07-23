@@ -20,7 +20,7 @@ export const useFetchFlights = () => {
           body: JSON.stringify({
             source: searchData.source,
             destination: searchData.destination,
-            departure_date: searchData.selectedDate,
+            departure_date: searchData.departureDate,
             travellers_count: searchData.travellersCount,
             class_type: searchData.classType,
           }),
