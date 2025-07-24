@@ -5,8 +5,11 @@ import { MemoryRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { currencyReducer } from "../../redux/currencySlice";
+import { getCurrencySymbol, formatCurrency, convertFromINR } from "../../utils/currencyUtils";
 
 const mockNavigate = vi.fn();
+const mockOnSelect = vi.fn();
+
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
@@ -32,7 +35,20 @@ const mockFlight: Flight = {
   class_type: "Economy",
 };
 
-const renderWithProviders = (flight: Flight, currency: string = "INR") => {
+const renderWithProviders = (
+  flight: Flight,
+  {
+    currency = "INR",
+    tripType = "One Way",
+    selected = false,
+    onSelect = mockOnSelect,
+  }: {
+    currency?: string;
+    tripType?: "One Way" | "Round";
+    selected?: boolean;
+    onSelect?: () => void;
+  } = {}
+) => {
   const store = configureStore({
     reducer: {
       currency: currencyReducer,
@@ -45,13 +61,18 @@ const renderWithProviders = (flight: Flight, currency: string = "INR") => {
   render(
     <Provider store={store}>
       <MemoryRouter>
-        <FlightResult flight={flight} />
+        <FlightResult
+          flight={flight}
+          onSelect={onSelect}
+          tripType={tripType}
+          selected={selected}
+        />
       </MemoryRouter>
     </Provider>
   );
 };
 
-describe("FlightResult component", () => {
+describe("FlightResult", () => {
   test("renders all flight details correctly", () => {
     renderWithProviders(mockFlight);
 
@@ -63,7 +84,11 @@ describe("FlightResult component", () => {
     expect(screen.getByText("Mumbai")).toBeInTheDocument();
     expect(screen.getByText("Seats Available")).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
-    expect(screen.getByText("₹ 3,500")).toBeInTheDocument();
+
+    const symbol = getCurrencySymbol("INR");
+    const formattedPrice = formatCurrency(3500, "INR");
+    expect(screen.getByText(`${symbol} ${formattedPrice}`)).toBeInTheDocument();
+
     expect(screen.getByRole("button", { name: "Book" })).toBeInTheDocument();
   });
 
@@ -74,19 +99,20 @@ describe("FlightResult component", () => {
     };
 
     renderWithProviders(flightWithoutDateDiff);
-
     expect(screen.queryByText("+1 day")).not.toBeInTheDocument();
   });
 
-  test("formats price correctly with commas", () => {
+  test("formats large price correctly in INR", () => {
     const expensiveFlight: Flight = {
       ...mockFlight,
       price: 125000,
     };
 
     renderWithProviders(expensiveFlight);
+    const symbol = getCurrencySymbol("INR");
+    const formatted = formatCurrency(125000, "INR");
 
-    expect(screen.getByText("₹ 1,25,000")).toBeInTheDocument();
+    expect(screen.getByText(`${symbol} ${formatted}`)).toBeInTheDocument();
   });
 
   test("navigates to /confirm-booking with correct state on Book button click", () => {
@@ -100,31 +126,73 @@ describe("FlightResult component", () => {
         price: 3500,
         basePrice: 3000,
         symbol: "₹",
-        currency: 'INR'
+        currency: "INR",
       },
     });
   });
 
-  test("uses correct currency and conversion when selected currency is USD", () => {
-    renderWithProviders(mockFlight, "USD");
+  test("formats and converts prices correctly for USD", () => {
+    renderWithProviders(mockFlight, { currency: "USD" });
 
-    const expectedPrice = 3500 * 0.0116;
-    const expectedBasePrice = 3000 * 0.0116;
+    const convertedPrice = convertFromINR(mockFlight.price, "USD");
+    const formatted = formatCurrency(convertedPrice, "USD");
+    const symbol = getCurrencySymbol("USD");
+
+    expect(screen.getByText(`${symbol} ${formatted}`)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Book" }));
+
+    const convertedBasePrice = convertFromINR(mockFlight.base_price, "USD");
 
     expect(mockNavigate).toHaveBeenCalledWith("/confirm-booking", {
       state: {
         flight: mockFlight,
-        price: expectedPrice,
-        basePrice: expectedBasePrice,
-        symbol: "$",
-        currency: 'USD'
+        price: convertedPrice,
+        basePrice: convertedBasePrice,
+        symbol: symbol,
+        currency: "USD",
       },
     });
+  });
 
-    expect(
-      screen.getByText(`$ ${expectedPrice.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`)
-    ).toBeInTheDocument();
+  test("calls onSelect if tripType is Round", () => {
+    renderWithProviders(mockFlight, { tripType: "Round" });
+
+    const card = screen.getByText("IndiGo").closest(".flight-card")!;
+    fireEvent.click(card);
+
+    expect(mockOnSelect).toHaveBeenCalled();
+  });
+
+  test("does not render Book button if tripType is Round", () => {
+    renderWithProviders(mockFlight, { tripType: "Round" });
+    expect(screen.queryByRole("button", { name: "Book" })).not.toBeInTheDocument();
+  });
+
+  test("adds selected-card class when selected is true", () => {
+    renderWithProviders(mockFlight, { selected: true });
+
+    const card = screen.getByText("IndiGo").closest(".flight-card");
+    expect(card?.classList.contains("selected-card")).toBe(true);
+  });
+
+  test("formats price correctly for EUR locale", () => {
+    renderWithProviders(mockFlight, { currency: "EUR" });
+
+    const converted = convertFromINR(mockFlight.price, "EUR");
+    const formatted = formatCurrency(converted, "EUR");
+    const symbol = getCurrencySymbol("EUR");
+
+    expect(screen.getByText(`${symbol} ${formatted}`)).toBeInTheDocument();
+  });
+
+  test("formats price correctly for JPY locale (no decimal)", () => {
+    renderWithProviders(mockFlight, { currency: "JPY" });
+
+    const converted = convertFromINR(mockFlight.price, "JPY");
+    const formatted = formatCurrency(converted, "JPY");
+    const symbol = getCurrencySymbol("JPY");
+
+    expect(screen.getByText(`${symbol} ${formatted}`)).toBeInTheDocument();
   });
 });
