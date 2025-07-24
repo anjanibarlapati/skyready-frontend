@@ -25,10 +25,13 @@ export interface Flight {
 
 interface FlightCardProps {
   flight: Flight;
+  onSelect: ()=>void, 
+  tripType: 'One Way' | 'Round'
+  selected: boolean
 }
 
 
-export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
+export const FlightResult: React.FC<FlightCardProps> = ({ flight, onSelect, tripType, selected }) => {
   
   const {currency} = useSelector((state: RootState) => state.currency)
   const convertedPrice = convertFromINR(flight.price, currency);
@@ -40,12 +43,16 @@ export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
     navigate("/confirm-booking", { state: { flight: flight, price: convertedPrice, basePrice: basePrice, symbol: symbol, currency: currency } });
   };
 
-  
+  const handleCardClick = () => {
+    if (tripType === 'Round') {
+      onSelect();
+    }
+  };
 
 
   return (
       <div className="flight-card-container">
-        <div className="flight-card">
+        <div className={`flight-card ${selected ? "selected-card" : ""}`} onClick={handleCardClick}>
           <div className="flight-details">
             <div className="flight-block-container">
               <div className="flight-icon">✈️</div>
@@ -84,9 +91,10 @@ export const FlightResult: React.FC<FlightCardProps> = ({ flight }) => {
               <span className="price-value"> {symbol} {formatCurrency(convertedPrice, currency)}</span>
             </div>
 
-            <div className="book-button-container" onClick={handleBook}>
+            {tripType === 'One Way' && <div className="book-button-container" onClick={handleBook}>
               <button className="book-button">Book</button>
             </div>
+            }
           </div>
         </div>
       </div>
