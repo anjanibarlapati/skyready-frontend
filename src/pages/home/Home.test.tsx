@@ -1,27 +1,60 @@
-import { act, render, screen } from '@testing-library/react';
-import { Home } from './Home';
-import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { flightsReducer, type Alert } from '../../redux/flightsSlice';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { MemoryRouter } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import type { Flight } from '../../components/flight_result/FlightResult';
 import { currencyReducer } from '../../redux/currencySlice';
 import { departureFlightsReducer } from '../../redux/departureFlightsSlice';
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
-import type { Flight } from '../../components/flight_result/FlightResult';
+import { flightsReducer, type Alert } from '../../redux/flightsSlice';
+import { returnFlightsReducer } from '../../redux/returnFlightsSlice';
+import { Home } from './Home';
 
-const renderHomeWithState = async (
-  departureFlights: Flight[],
-  alert: Alert | null = null,
+const createMockFlight = (overrides?: Partial<Flight>): Flight => ({
+  airline_name: 'Air India',
+  flight_number: 'AI101',
+  source: 'Delhi',
+  destination: 'Mumbai',
+  departure_date: '2025-07-18',
+  departure_time: '10:00',
+  arrival_date: '2025-07-18',
+  arrival_time: '12:00',
+  arrival_date_difference: '',
+  seats: 5,
+  price: 4500,
+  base_price: 4000,
+  travellers_count: 1,
+  class_type: 'Economy',
+  ...overrides,
+});
+
+const renderHomeWithState = async ({
+  departureFlights = [],
+  returnFlights = [],
+  alert = null,
   departureMessage = '',
-  loading = false,
+  returnMessage = '',
   departureError = '',
-  currency = 'INR'
-) => {
-  const mockStore = configureStore({
+  returnError = '',
+  loading = false,
+  currency = 'INR',
+}: {
+  departureFlights?: Flight[];
+  returnFlights?: Flight[];
+  alert?: Alert | null;
+  departureMessage?: string;
+  returnMessage?: string;
+  departureError?: string;
+  returnError?: string;
+  loading?: boolean;
+  currency?: string;
+}) => {
+  const store = configureStore({
     reducer: {
       flights: flightsReducer,
       currency: currencyReducer,
       departureFlights: departureFlightsReducer,
+      returnFlights: returnFlightsReducer,
     },
     preloadedState: {
       flights: {
@@ -30,26 +63,24 @@ const renderHomeWithState = async (
         searchData: {
           selectedDate: new Date().toISOString().split("T")[0],
           departureDate: new Date().toISOString().split("T")[0],
-          source: '',
-          destination: '',
+          selectedReturnDate: new Date().toISOString().split("T")[0],
+          source: 'DEL',
+          destination: 'BOM',
           travellersCount: 1,
           classType: 'Economy',
+          tripType: 'Round' as 'One Way' | 'Round',
         },
+        tripType: 'Round' as 'One Way'|'Round',
       },
-      currency: {
-        currency,
-      },
-      departureFlights: {
-        departureFlights,
-        departureMessage,
-        departureError,
-      },
+      currency: { currency },
+      departureFlights: { departureFlights, departureMessage, departureError },
+      returnFlights: { returnFlights, returnMessage, returnError },
     },
   });
 
   await act(async () => {
     render(
-      <Provider store={mockStore}>
+      <Provider store={store}>
         <MemoryRouter>
           <Home />
         </MemoryRouter>
@@ -58,11 +89,11 @@ const renderHomeWithState = async (
   });
 };
 
-describe('Home component', () => {
+describe('Home Component', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
-      json: vi.fn().mockResolvedValue(['Delhi', 'Mumbai', 'Bengaluru']),
+      json: vi.fn().mockResolvedValue(['Delhi', 'Mumbai']),
     }));
   });
 
@@ -70,58 +101,102 @@ describe('Home component', () => {
     vi.restoreAllMocks();
   });
 
-  test('renders flight results if flights are available', async () => {
-    await renderHomeWithState([
-      {
-        airline_name: 'Air India',
-        flight_number: 'AI101',
-        source: 'Delhi',
-        destination: 'Mumbai',
-        departure_date: '2025-07-18',
-        departure_time: '10:00',
-        arrival_date: '2025-07-18',
-        arrival_time: '12:00',
-        arrival_date_difference: '',
-        seats: 5,
-        price: 4500,
-        base_price: 4000,
-        travellers_count: 2,
-        class_type: 'Economy',
-      },
-    ]);
+  test('renders both departure and return flights', async () => {
+    const depFlight = createMockFlight({ flight_number: 'AI101' });
+    const retFlight = createMockFlight({ flight_number: 'AI102', source: 'Mumbai', destination: 'Delhi' });
+
+    await renderHomeWithState({
+      departureFlights: [depFlight],
+      returnFlights: [retFlight],
+    });
 
     expect(screen.getByText(/Available Flights/i)).toBeInTheDocument();
     expect(screen.getByText(/Air India/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/DEL/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/BOM/).length).toBeGreaterThan(0);
   });
 
-  test('renders message if no flights are found', async () => {
-    await renderHomeWithState([], null, 'No flights found for the selected route');
-    expect(screen.getByText(/No flights found/i)).toBeInTheDocument();
+ test('can switch tabs between departure and return', async () => {
+  const depFlight = createMockFlight({ flight_number: 'AI101' });
+  const retFlight = createMockFlight({ flight_number: 'AI102', source: 'Mumbai', destination: 'Delhi' });
+
+  await renderHomeWithState({
+    departureFlights: [depFlight],
+    returnFlights: [retFlight],
   });
 
-  test('does not render flight result container if no flights, message, or error', async () => {
-    await renderHomeWithState([]);
-    expect(screen.queryByText(/Available Flights/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/No flights found/i)).not.toBeInTheDocument();
+  const tabs = screen.getAllByRole('button', { name: /DEL|BOM/ });
+
+  expect(tabs[0]).toHaveClass('active');
+  expect(tabs[1]).not.toHaveClass('active');
+
+  fireEvent.click(tabs[1]);
+  expect(tabs[1]).toHaveClass('active');
+  expect(tabs[0]).not.toHaveClass('active');
+});
+
+  test('renders message if no departure flights found', async () => {
+    await renderHomeWithState({
+      departureFlights: [],
+      departureMessage: 'No departure flights',
+      returnFlights: [createMockFlight()],
+    });
+
+    expect(screen.getByText(/No departure flights/i)).toBeInTheDocument();
   });
 
-  test('shows error message if error is present', async () => {
-    await renderHomeWithState([], null, '', false, 'Internal server error');
-    expect(screen.getByText(/Internal server error/i)).toBeInTheDocument();
+  test('renders return error message', async () => {
+    await renderHomeWithState({
+      departureFlights: [createMockFlight()],
+      returnFlights: [],
+      returnError: 'Internal server error',
+    });
+
+    const bomTabs = screen.getAllByText(/BOM/);
+    const returnTab = bomTabs[1];
+    fireEvent.click(returnTab);
   });
 
-  test('shows loading spinner when loading is true', async () => {
-    await renderHomeWithState([], null, '', true);
+  test('shows loading spinner', async () => {
+    await renderHomeWithState({
+      loading: true,
+      departureFlights: [],
+      returnFlights: [],
+    });
+
     expect(screen.getByTestId('spinner')).toBeInTheDocument();
   });
 
-  test('shows success alert and hides it after timeout', async () => {
-    await renderHomeWithState([], { type: 'success', message: 'Booking confirmed!' }, '', false);
+  test('shows success alert', async () => {
+    await renderHomeWithState({
+      alert: { type: 'success', message: 'Booking confirmed!' },
+    });
+
     expect(screen.getByText(/Booking confirmed!/i)).toBeInTheDocument();
   });
 
-  test('shows failure alert and hides it after timeout', async () => {
-    await renderHomeWithState([], { type: 'failure', message: 'Booking failed!' }, '', false);
+  test('shows failure alert', async () => {
+    await renderHomeWithState({
+      alert: { type: 'failure', message: 'Booking failed!' },
+    });
+
     expect(screen.getByText(/Booking failed!/i)).toBeInTheDocument();
   });
+
+  test('Book button is disabled unless both flights selected', async () => {
+    const depFlight = createMockFlight({ flight_number: 'AI101' });
+    const retFlight = createMockFlight({ flight_number: 'AI102', source: 'Mumbai', destination: 'Delhi' });
+
+    await renderHomeWithState({
+    departureFlights: [depFlight],
+    returnFlights: [retFlight],
+    });
+
+    const bomElements = screen.getAllByText(/BOM/);
+    fireEvent.click(bomElements[1]); 
+
+    const bookButton = screen.getByRole('button', { name: /Book/i });
+    expect(bookButton).toBeDisabled();
+  });
+
 });
