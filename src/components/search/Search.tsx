@@ -6,6 +6,8 @@ import { useFetchFlights } from "../../hooks/useFetchFlights";
 import { setCurrency } from "../../redux/currencySlice";
 import {
   setSearchData,
+  setTripType,
+  type SearchData,
 } from "../../redux/flightsSlice";
 import type { RootState } from "../../redux/store";
 import { detectCurrency, supportedCurrencies } from "../../utils/currencyUtils";
@@ -23,8 +25,11 @@ export const Search = () => {
   const [travellersCount, setTravellersCount] = useState(1);
   const [classType, setClassType] = useState("Economy");
   const [cities, setCities] = useState<string[]>([]);
+  const {tripType} = useSelector((state: RootState) => state.flights)
+  const [returnDate, setReturnDate] = useState(new Date(new Date().setDate(new Date().getDate() + 1)).toLocaleDateString("en-CA"));
   const [loading, setLoading] = useState(false);
   const {currency} = useSelector((state: RootState) => state.currency)
+
 
 
 
@@ -99,14 +104,19 @@ export const Search = () => {
     }
 
 
-    const searchParams = {
+    const searchParams: SearchData = {
       selectedDate: departureDate,
       departureDate: departureDate,
       source,
       destination,
       travellersCount,
       classType,
+      tripType
     };
+    if (tripType === 'Round') {
+      searchParams.selectedReturnDate = returnDate;
+      searchParams.returnDate = returnDate;
+    }
 
     dispatch(setSearchData(searchParams));
     try {
@@ -126,6 +136,10 @@ export const Search = () => {
       <div className="search-main-container">
         <div className="search-body">
           <div className="search-top-container">
+            <div className="trip-types-container">
+              <button type="button" className={tripType === 'One Way' ? "trip-button-active": "trip-button"} onClick={()=>dispatch(setTripType('One Way'))}>One Way</button>
+              <button type="button" className={tripType === 'Round' ? "trip-button-active": "trip-button"} onClick={()=>dispatch(setTripType('Round'))}>Round Trip</button>
+            </div>
             <div className="currency-dropdown-wrapper">
               <select
                 id="currency"
@@ -199,6 +213,21 @@ export const Search = () => {
                     onChange={(e) => setDepartureDate(e.target.value)}
                   />
                 </div>
+
+                {tripType ==='Round' && <div className="input-field">
+                  <label htmlFor="departureDate">Return Date</label>
+                  <input
+                    type="date"
+                    id="returnDate"
+                    name="returnDate"
+                    className="date-picker"
+                    value={returnDate}
+                    min={new Date().toLocaleDateString("en-CA")}
+                    max={
+                      new Date(new Date().setMonth(new Date().getMonth() + 2)).toLocaleDateString("en-CA")}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                  />
+                </div>}
 
                 <div className="input-field">
                   <label htmlFor="travellers_count">Travellers</label>
