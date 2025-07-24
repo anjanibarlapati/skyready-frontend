@@ -11,11 +11,15 @@ export interface SearchData {
   travellersCount: number;
   classType: string;
   departureDate: string;
+  tripType: 'One Way' | 'Round',
+  selectedReturnDate?: string;
+  returnDate?: string;
 }
-interface FlightsState {
+export interface FlightsState {
   alert: Alert | null;
   searchData: SearchData;
   loading: boolean;
+  tripType: 'One Way' | 'Round'
 }
 const initialState: FlightsState = {
   alert: null,
@@ -27,7 +31,9 @@ const initialState: FlightsState = {
     destination: "",
     travellersCount: 1,
     classType: "Economy",
+    tripType: 'One Way'
   },
+  tripType: 'One Way'
 };
 const flightsSlice = createSlice({
   name: "flights",
@@ -45,7 +51,11 @@ const flightsSlice = createSlice({
     setLoading(state, action : PayloadAction<boolean>) {
       state.loading = action.payload;
     },
+    setTripType(state, action: PayloadAction<'One Way' | 'Round'> ) {
+      state.tripType = action.payload
+    }
   },
 });
-export const {setAlert, clearAlert, setSearchData, setLoading } = flightsSlice.actions;
+export const {setAlert, clearAlert, setSearchData, setLoading, setTripType } = flightsSlice.actions;
 export const flightsReducer = flightsSlice.reducer;
+
