@@ -1,19 +1,18 @@
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import "./DateNavigator.css";
 import type { RootState } from "../../redux/store";
 import { useFetchFlights } from "../../hooks/useFetchFlights";
 import { setLoading, setSearchData } from "../../redux/flightsSlice";
 
-export const DateNavigator: React.FC = () => {
+export const DateNavigator = ({type}: {type: 'return' | 'departure'}) => {
   const { fetchFlights } = useFetchFlights();
   const dispatch = useDispatch();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const searchData = useSelector( (state: RootState) => state.flights.searchData );
   
-  const selectedDate = new Date(searchData.selectedDate);  
-  const departureDate = new Date(searchData.departureDate);
+  const selectedDate = (type === 'return' && searchData.selectedReturnDate) ? new Date(searchData.selectedReturnDate):  new Date(searchData.selectedDate) ;  
+  const departureDate = (type === 'return' && searchData.returnDate) ? new Date(searchData?.returnDate) : new Date(searchData.departureDate);
 
   const minDate = new Date(Math.max(
     today.getTime(),
@@ -36,14 +35,19 @@ export const DateNavigator: React.FC = () => {
 
     const formattedDate = newDate.toLocaleDateString("en-CA");
 
-    const updatedSearchData = {
-      ...searchData,
-      departureDate : formattedDate,
-    };
+      const updatedSearchData = (type === 'departure') ? {
+        ...searchData,
+        departureDate : formattedDate,
+      } : {
+        ...searchData,
+        returnDate : formattedDate,
+      };
+
+
     dispatch(setSearchData(updatedSearchData));
     dispatch(setLoading(true));
     try {
-      await fetchFlights(updatedSearchData);
+      await fetchFlights(updatedSearchData, type);
     } finally {
       dispatch(setLoading(false));
     }
