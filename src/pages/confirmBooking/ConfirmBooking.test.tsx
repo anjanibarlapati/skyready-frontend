@@ -1,12 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi, afterEach } from "vitest";
 
 import { ConfirmBooking } from "./ConfirmBooking";
 import { setAlert } from "../../redux/flightsSlice";
 import { clearDepartureFlights } from "../../redux/departureFlightsSlice";
+import { clearReturnFlights } from "../../redux/returnFlightsSlice";
 import { store } from "../../redux/store";
+import type { Location } from "react-router-dom";
 
 const mockDispatch = vi.fn();
 const mockNavigate = vi.fn();
@@ -28,6 +30,17 @@ const mockFlight = {
   class_type: "Economy",
 };
 
+const mockReturnFlight = {
+  ...mockFlight,
+  flight_number: "AI202",
+  source: "Mumbai",
+  destination: "Delhi",
+  departure_date: "2025-08-05",
+  departure_time: "14:00",
+};
+
+let mockLocationState = {};
+
 vi.mock("react-redux", async () => {
   const actual = await vi.importActual<typeof import("react-redux")>("react-redux");
   return {
@@ -40,22 +53,19 @@ vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
   return {
     ...actual,
-    useLocation: () => ({
-      state: {
-        flight: mockFlight,
-        price: 5000,
-        basePrice: 4500,
-        symbol: "₹",
-        currency: "INR",
-      },
+    useLocation: (): Location => ({
+      pathname: "/confirm-booking",
+      search: "",
+      hash: "",
+      key: "mock-key",
+      state: mockLocationState,
     }),
     useNavigate: () => mockNavigate,
   };
 });
 
-
-const renderConfirmBooking = () => {
-  return render(
+const renderConfirmBooking = () =>
+  render(
     <Provider store={store}>
       <MemoryRouter initialEntries={["/confirm-booking"]}>
         <Routes>
@@ -65,7 +75,6 @@ const renderConfirmBooking = () => {
       </MemoryRouter>
     </Provider>
   );
-};
 
 describe("ConfirmBooking Component", () => {
   beforeEach(() => {
@@ -74,7 +83,27 @@ describe("ConfirmBooking Component", () => {
     mockNavigate.mockClear();
   });
 
-  test("renders flight details and fare summary", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const oneWayState = {
+    flight: mockFlight,
+    price: 5000,
+    basePrice: 4500,
+    symbol: "₹",
+    currency: "INR",
+  };
+
+  const roundTripState = {
+    ...oneWayState,
+    returnFlight: mockReturnFlight,
+    returnFlightPrice: 4000,
+    returnFlightBasePrice: 3600,
+  };
+
+  test("renders one-way booking UI with fare summary", () => {
+    mockLocationState = oneWayState;
     renderConfirmBooking();
 
     expect(screen.getByText("Confirm Your Flight")).toBeInTheDocument();
@@ -85,65 +114,77 @@ describe("ConfirmBooking Component", () => {
     expect(screen.getByRole("button", { name: /Confirm Booking/i })).toBeInTheDocument();
   });
 
-  test("successful booking dispatches success alert and clears departure flights", async () => {
+  test("shows success alert on successful one-way booking", async () => {
+    mockLocationState = oneWayState;
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ message: "Booking successful" }),
     }));
 
     renderConfirmBooking();
-
     fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setAlert({
-          type: "success",
-          message: "🎉 Booking confirmed successfully!",
-        })
-      );
+      expect(mockDispatch).toHaveBeenCalledWith(setAlert({
+        type: "success",
+        message: "🎉 Booking confirmed successfully!",
+      }));
       expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+      expect(mockDispatch).toHaveBeenCalledWith(clearReturnFlights());
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
-  test("failed booking dispatches failure alert", async () => {
+  test("shows failure alert when booking fails", async () => {
+    mockLocationState = oneWayState;
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: false,
       json: async () => ({ message: "Booking failed" }),
     }));
 
     renderConfirmBooking();
-
     fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setAlert({
-          type: "failure",
-          message: "❌ Booking failed",
-        })
-      );
-      expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+      expect(mockDispatch).toHaveBeenCalledWith(setAlert({
+        type: "failure",
+        message: "❌ Booking failed",
+      }));
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
-  test("network error shows fallback alert", async () => {
+  test("shows network error alert on fetch rejection", async () => {
+    mockLocationState = oneWayState;
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("Network error")));
 
     renderConfirmBooking();
-
     fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
 
     await waitFor(() => {
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setAlert({
-          type: "failure",
-          message: "❌ Network error. Please try again.",
-        })
-      );
-      expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+      expect(mockDispatch).toHaveBeenCalledWith(setAlert({
+        type: "failure",
+        message: "❌ Network error. Please try again.",
+      }));
+      expect(mockNavigate).toHaveBeenCalledWith("/");
+    });
+  });
+
+  test("renders and confirms round-trip booking", async () => {
+    mockLocationState = roundTripState;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ message: "Round-trip booked" }),
+    }));
+
+    renderConfirmBooking();
+    fireEvent.click(screen.getByRole("button", { name: /Confirm Booking/i }));
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(setAlert({
+        type: "success",
+        message: "🎉 Booking confirmed successfully!",
+      }));
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
