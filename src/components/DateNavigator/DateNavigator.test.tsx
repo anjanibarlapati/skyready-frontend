@@ -12,11 +12,14 @@ const mockFetchFlights = vi.fn();
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
+
 const formatForSearchData = (date: Date) =>
-  `${date.toLocaleDateString("en-CA")} 00:00:00`;
+  date.toLocaleDateString("en-CA");
 
 let mockedSelectedDate = formatForSearchData(today);
 let mockedDepartureDate = formatForSearchData(today);
+let mockedReturnDate = formatForSearchData(today);
+let mockedSelectedReturnDate = formatForSearchData(today);
 
 vi.mock("react-redux", async () => {
   const actual = await vi.importActual<typeof import("react-redux")>(
@@ -35,8 +38,11 @@ vi.mock("react-redux", async () => {
             destination: "Mumbai",
             selectedDate: mockedSelectedDate,
             departureDate: mockedDepartureDate,
+            returnDate: mockedReturnDate,
+            selectedReturnDate: mockedSelectedReturnDate,
             travellersCount: 2,
             classType: "Economy",
+            tripType: "Round",
           },
         },
       }),
@@ -54,10 +60,12 @@ describe("DateNavigator", () => {
     vi.clearAllMocks();
     mockedSelectedDate = formatForSearchData(today);
     mockedDepartureDate = formatForSearchData(today);
+    mockedReturnDate = formatForSearchData(today);
+    mockedSelectedReturnDate = formatForSearchData(today);
   });
 
-  test("renders current date and nav buttons", () => {
-    render(<DateNavigator />);
+  test("renders current departure date and nav buttons", () => {
+    render(<DateNavigator type="departure" />);
 
     const expectedLabel = today.toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -70,13 +78,13 @@ describe("DateNavigator", () => {
     expect(screen.getByText("→")).toBeInTheDocument();
   });
 
-  test("disables previous button when departureDate is minDate (today)", () => {
-    render(<DateNavigator />);
+  test("disables previous button when departure date is minDate", () => {
+    render(<DateNavigator type="departure" />);
     expect(screen.getByText("←")).toBeDisabled();
   });
 
-  test("clicking next date dispatches updated departureDate and fetches flights", async () => {
-    render(<DateNavigator />);
+  test("clicking next on departure updates departureDate and dispatches actions", async () => {
+    render(<DateNavigator type="departure" />);
 
     const nextDay = new Date(today);
     nextDay.setDate(today.getDate() + 1);
@@ -90,19 +98,20 @@ describe("DateNavigator", () => {
         setSearchData(expect.objectContaining({ departureDate: expectedDate }))
       );
       expect(mockFetchFlights).toHaveBeenCalledWith(
-        expect.objectContaining({ departureDate: expectedDate })
+        expect.objectContaining({ departureDate: expectedDate }),
+        "departure"
       );
       expect(mockDispatch).toHaveBeenCalledWith(setLoading(false));
     });
   });
 
-  test("clicking previous date dispatches updated departureDate and fetches flights", async () => {
+  test("clicking previous on future departure updates date", async () => {
     const futureDate = new Date(today);
     futureDate.setDate(today.getDate() + 1);
     mockedSelectedDate = formatForSearchData(futureDate);
     mockedDepartureDate = formatForSearchData(futureDate);
 
-    render(<DateNavigator />);
+    render(<DateNavigator type="departure" />);
 
     fireEvent.click(screen.getByText("←"));
 
@@ -114,17 +123,17 @@ describe("DateNavigator", () => {
         setSearchData(expect.objectContaining({ departureDate: expectedDate }))
       );
       expect(mockFetchFlights).toHaveBeenCalledWith(
-        expect.objectContaining({ departureDate: expectedDate })
+        expect.objectContaining({ departureDate: expectedDate }),
+        "departure"
       );
       expect(mockDispatch).toHaveBeenCalledWith(setLoading(false));
     });
   });
 
-  test("does NOT dispatch or fetch if clicking previous when date is at minDate", async () => {
-    render(<DateNavigator />);
+  test("does NOT dispatch or fetch when clicking ← at minDate", async () => {
+    render(<DateNavigator type="departure" />);
 
-    const prevBtn = screen.getByText("←");
-    fireEvent.click(prevBtn);
+    fireEvent.click(screen.getByText("←"));
 
     await waitFor(() => {
       expect(mockDispatch).not.toHaveBeenCalledWith(
@@ -134,22 +143,43 @@ describe("DateNavigator", () => {
     });
   });
 
-  test("does NOT dispatch or fetch if clicking next when date is at maxDate", async () => {
+  test("does NOT dispatch or fetch when clicking → at maxDate", async () => {
     const maxDate = new Date(today);
-    maxDate.setMonth(maxDate.getMonth() + 2);
+    maxDate.setMonth(today.getMonth() + 2);
     mockedSelectedDate = formatForSearchData(maxDate);
     mockedDepartureDate = formatForSearchData(maxDate);
 
-    render(<DateNavigator />);
+    render(<DateNavigator type="departure" />);
 
-    const nextBtn = screen.getByText("→");
-    fireEvent.click(nextBtn);
+    fireEvent.click(screen.getByText("→"));
 
     await waitFor(() => {
       expect(mockDispatch).not.toHaveBeenCalledWith(
         setSearchData(expect.anything())
       );
       expect(mockFetchFlights).not.toHaveBeenCalled();
+    });
+  });
+
+  test("clicking next on return updates returnDate", async () => {
+    render(<DateNavigator type="return" />);
+
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1);
+    const expectedDate = nextDay.toLocaleDateString("en-CA");
+
+    fireEvent.click(screen.getByText("→"));
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(setLoading(true));
+      expect(mockDispatch).toHaveBeenCalledWith(
+        setSearchData(expect.objectContaining({ returnDate: expectedDate }))
+      );
+      expect(mockFetchFlights).toHaveBeenCalledWith(
+        expect.objectContaining({ returnDate: expectedDate }),
+        "return"
+      );
+      expect(mockDispatch).toHaveBeenCalledWith(setLoading(false));
     });
   });
 });
