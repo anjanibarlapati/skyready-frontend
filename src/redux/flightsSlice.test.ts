@@ -1,107 +1,62 @@
-import { describe, expect, test } from "vitest";
-import type { Flight } from "../components/flight_result/FlightResult";
-import type { Alert } from "./flightsSlice";
+import { describe, test, expect } from "vitest";
 import {
-  clearAlert,
-  clearFlights,
   flightsReducer,
   setAlert,
-  setError,
-  setFlights,
-  setLoading,
-  setMessage,
+  clearAlert,
   setSearchData,
+  setLoading,
 } from "./flightsSlice";
-describe("flightsSlice reducer", () => {
-  const mockFlights: Flight[] = [
-    {
-      airline_name: "IndiGo",
-      flight_number: "6E101",
-      source: "Delhi",
-      destination: "Mumbai",
-      departure_date: "2025-08-01",
-      departure_time: "09:00",
-      arrival_date: "2025-08-01",
-      arrival_time: "11:00",
-      arrival_date_difference: "",
-      seats: 10,
-      price: 5000,
-      base_price: 4500,
-      travellers_count: 2,
-      class_type: "Economy",
-    },
-  ];
 
-  const initialSearchData = {
-    selectedDate: new Date().toISOString().split("T")[0],
-    departureDate: new Date().toISOString().split("T")[0],
-    source: "",
-    destination: "",
-    travellersCount: 1,
-    classType: "Economy",
-  };
+import type { Alert } from "./flightsSlice";
+
+describe("flightsSlice reducer", () => {
+  const initialDate = new Date().toLocaleDateString("en-CA").split("T")[0];
 
   const initialState = {
-    flights: [],
-    message: "",
-    error: "",
     alert: null,
     loading: false,
-    searchData: initialSearchData,
+    searchData: {
+      selectedDate: initialDate,
+      departureDate: initialDate,
+      source: "",
+      destination: "",
+      travellersCount: 1,
+      classType: "Economy",
+    },
   };
-  test("setFlights should update the flights array", () => {
-    const nextState = flightsReducer(initialState, setFlights(mockFlights));
-    expect(nextState.flights).toEqual(mockFlights);
-  });
-  test("clearFlights should empty the flights array", () => {
-    const stateWithFlights = { ...initialState, flights: mockFlights };
-    const nextState = flightsReducer(stateWithFlights, clearFlights());
-    expect(nextState.flights).toEqual([]);
-  });
-  test("setMessage should set the message string", () => {
-    const message = "No flights available";
-    const nextState = flightsReducer(initialState, setMessage(message));
-    expect(nextState.message).toBe(message);
-  });
-  test("setAlert should set alert object", () => {
+
+  test("setAlert should update the alert object", () => {
     const alert: Alert = {
       type: "success",
-      message: "Flight booked!",
+      message: "Booking confirmed",
     };
     const nextState = flightsReducer(initialState, setAlert(alert));
     expect(nextState.alert).toEqual(alert);
   });
+
   test("clearAlert should reset alert to null", () => {
     const nextState = flightsReducer(initialState, clearAlert());
     expect(nextState.alert).toBeNull();
   });
-  test("setSearchData should replace full searchData if provided", () => {
+
+  test("setSearchData should replace the searchData", () => {
     const newSearchData = {
       selectedDate: "2025-08-15",
       departureDate: "2025-08-15",
-      source: "Hyderabad",
-      destination: "Bangalore",
-      travellersCount: 3,
-      classType: "First Class",
+      source: "Mumbai",
+      destination: "Goa",
+      travellersCount: 2,
+      classType: "Business",
     };
-    const nextState = flightsReducer(
-      initialState,
-      setSearchData(newSearchData)
-    );
+    const nextState = flightsReducer(initialState, setSearchData(newSearchData));
     expect(nextState.searchData).toEqual(newSearchData);
   });
 
-  test("setError should set the error string", () => {
-  const error = "Something went wrong";
-  const nextState = flightsReducer(initialState, setError(error));
-  expect(nextState.error).toBe(error);
-  });
+  test("setLoading should update loading to true or false", () => {
+    const loadingState = flightsReducer(initialState, setLoading(true));
+    expect(loadingState.loading).toBe(true);
 
-  test("setLoading should toggle loading flag", () => {
-    const nextState = flightsReducer(initialState, setLoading(true));
-    expect(nextState.loading).toBe(true);
-
-    const finalState = flightsReducer(nextState, setLoading(false));
-    expect(finalState.loading).toBe(false);
+    const idleState = flightsReducer(loadingState, setLoading(false));
+    expect(idleState.loading).toBe(false);
   });
 });
