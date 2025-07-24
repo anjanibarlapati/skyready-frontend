@@ -231,6 +231,36 @@
   transition: transform 0.2s;
 }
 
+  .search-top-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+
+.trip-types-container{
+  display: flex;
+  flex-direction: row;
+  gap:20px;
+}
+
+.trip-button{
+  background-color: white;
+  border-radius: 20px;
+  border: 1.3px solid #ccc;
+  padding: 8px 18px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.trip-button-active {
+  background-color: rgba(184, 200, 248, 0.3);
+  border-radius: 20px;
+  border: 1.3px solid rgb(131, 160, 246);
+  padding: 8px 18px;
+  font-family: 'Poppins', sans-serif;
+}
+
 @media (max-width: 768px) {
   .input-fields-row {
     flex-direction: column;
