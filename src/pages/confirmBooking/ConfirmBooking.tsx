@@ -1,11 +1,12 @@
 import { useDispatch } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FlightCard } from "../../components/FlightCard/FlightCard";
-import { clearFlights, setAlert } from "../../redux/flightsSlice";
+import { setAlert } from "../../redux/flightsSlice";
 import "./ConfirmBooking.css";
 import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
 import { useState } from "react";
 import { formatCurrency } from "../../utils/currencyUtils";
+import { clearDepartureFlights } from "../../redux/departureFlightsSlice";
 
 export const ConfirmBooking = () => {
     const location = useLocation();
@@ -63,7 +64,7 @@ export const ConfirmBooking = () => {
       );
     } 
     finally {
-      dispatch(clearFlights());
+      dispatch(clearDepartureFlights());
       setLoading(false);
       navigate("/");
     }

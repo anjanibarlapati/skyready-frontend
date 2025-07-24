@@ -11,7 +11,8 @@ import { DateNavigator } from "../../components/DateNavigator/DateNavigator";
 import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
 
 export const Home = () => {
-  const { flights, message, alert, error, loading } = useSelector((state: RootState) => state.flights);
+  const {  alert, loading } = useSelector((state: RootState) => state.flights);
+  const {departureFlights, departureMessage, departureError} = useSelector((state: RootState) => state.departureFlights);
   const [showBookingAlert, setShowBookingAlert] = useState(false);
   const dispatch = useDispatch();
 
@@ -27,8 +28,8 @@ export const Home = () => {
     }
   }, [alert, dispatch]);
 
-  const shouldShowFlightResults = flights.length > 0 || message || error || loading;
-  const shouldShowDateNavigator = flights.length > 0 || message || loading ? true : false;
+  const shouldShowDepartureFlightResults = departureFlights.length > 0 || departureMessage || departureError || loading;
+  const shouldShowDepartureDateNavigator = departureFlights.length > 0 || departureMessage || loading ? true : false;
 
   return (
     <div className="home-container">
@@ -39,19 +40,19 @@ export const Home = () => {
       )}
       <ImageSlider/>
       <Search />
-      { shouldShowFlightResults && <div id="flight-results" className="flight-results-container">
-        {shouldShowDateNavigator && <DateNavigator />}
+      { shouldShowDepartureFlightResults && <div id="flight-results" className="flight-results-container">
+        {shouldShowDepartureDateNavigator && <DateNavigator />}
         {loading && <LoadingSpinner/>}
-        {flights.length > 0 ? (
+        {departureFlights.length > 0 ? (
           <>
             <h2>Available Flights</h2>
-            {flights.map((flight, index) => (
+            {departureFlights.map((flight, index) => (
               <FlightResult key={index} flight={flight} />
             ))}
           </>
         ) : (
           <>
-        <p>{message || error}</p>
+        <p>{departureMessage|| departureError}</p>
       </>
         )}
       </div>}

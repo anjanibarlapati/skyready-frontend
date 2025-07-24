@@ -3,46 +3,50 @@ import { Home } from './Home';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { flightsReducer, type Alert } from '../../redux/flightsSlice';
+import { currencyReducer } from '../../redux/currencySlice';
+import { departureFlightsReducer } from '../../redux/departureFlightsSlice';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import type { Flight } from '../../components/flight_result/FlightResult';
-import { currencyReducer } from '../../redux/currencySlice';
 
 const renderHomeWithState = async (
-  flights: Flight[],
+  departureFlights: Flight[],
   alert: Alert | null = null,
-  message = '',
-  loading: boolean = false,
-  error = '',
-  currency: string = 'INR'
+  departureMessage = '',
+  loading = false,
+  departureError = '',
+  currency = 'INR'
 ) => {
   const mockStore = configureStore({
     reducer: {
       flights: flightsReducer,
       currency: currencyReducer,
-
+      departureFlights: departureFlightsReducer,
     },
     preloadedState: {
       flights: {
-        flights,
-        message,
-        error,
-        loading,
         alert,
+        loading,
         searchData: {
           selectedDate: new Date().toISOString().split("T")[0],
           departureDate: new Date().toISOString().split("T")[0],
-          source: "",
-          destination: "",
+          source: '',
+          destination: '',
           travellersCount: 1,
-          classType: "Economy",
+          classType: 'Economy',
         },
       },
       currency: {
         currency,
       },
+      departureFlights: {
+        departureFlights,
+        departureMessage,
+        departureError,
+      },
     },
   });
+
   await act(async () => {
     render(
       <Provider store={mockStore}>
@@ -52,7 +56,6 @@ const renderHomeWithState = async (
       </Provider>
     );
   });
-
 };
 
 describe('Home component', () => {
@@ -103,7 +106,7 @@ describe('Home component', () => {
   });
 
   test('shows error message if error is present', async () => {
-    await renderHomeWithState([], null, '', false,  'Internal server error');
+    await renderHomeWithState([], null, '', false, 'Internal server error');
     expect(screen.getByText(/Internal server error/i)).toBeInTheDocument();
   });
 
@@ -113,12 +116,12 @@ describe('Home component', () => {
   });
 
   test('shows success alert and hides it after timeout', async () => {
-    await renderHomeWithState([], { type: 'success', message: 'Booking confirmed!' } , '', false);
+    await renderHomeWithState([], { type: 'success', message: 'Booking confirmed!' }, '', false);
     expect(screen.getByText(/Booking confirmed!/i)).toBeInTheDocument();
   });
 
   test('shows failure alert and hides it after timeout', async () => {
-    await renderHomeWithState([], { type: 'failure', message: 'Booking failed!' }, '', false, );
+    await renderHomeWithState([], { type: 'failure', message: 'Booking failed!' }, '', false);
     expect(screen.getByText(/Booking failed!/i)).toBeInTheDocument();
   });
 });

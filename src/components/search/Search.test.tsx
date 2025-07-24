@@ -1,10 +1,11 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { Search } from "./Search";
 import { flightsReducer } from "../../redux/flightsSlice";
 import { currencyReducer } from "../../redux/currencySlice";
+import { departureFlightsReducer } from "../../redux/departureFlightsSlice";
 
 const mockDispatch = vi.fn();
 
@@ -21,25 +22,28 @@ const createMockStore = () =>
     reducer: {
       flights: flightsReducer,
       currency: currencyReducer,
+      departureFlights: departureFlightsReducer,
     },
     preloadedState: {
       flights: {
-        flights: [],
-        message: "",
-        error: "",
-        loading: false,
         alert: null,
+        loading: false,
         searchData: {
+          selectedDate: "",
+          departureDate: "",
           source: "",
           destination: "",
-          selectedDate: "",
-          departureDate:'',
           travellersCount: 1,
           classType: "Economy",
         },
       },
       currency: {
         currency: "USD",
+      },
+      departureFlights: {
+        departureFlights: [],
+        departureMessage: "",
+        departureError: "",
       },
     },
   });
@@ -51,9 +55,10 @@ const renderSearchForm = () =>
     </Provider>
   );
 
-describe("Search component", () => {
+describe("Search Component", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    mockDispatch.mockClear();
 
     vi.stubGlobal("fetch", vi.fn((url) => {
       if (url.toString().includes("ipapi")) {
@@ -78,190 +83,127 @@ describe("Search component", () => {
     vi.restoreAllMocks();
   });
 
-  test("renders input fields and search button", async () => {
+  test("renders all input fields and search button", async () => {
     renderSearchForm();
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Source/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/Destination/i)).toBeInTheDocument();
-    });
+    await waitFor(() => screen.getByLabelText(/Source/i));
+    expect(screen.getByLabelText(/Destination/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Departure Date/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Travellers/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Class Type/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Search/i })).toBeInTheDocument();
   });
-  test("renders currency dropdown and updates on change", async () => {
-      renderSearchForm(); 
-      await waitFor(() => {
-      const currencyDropdown = screen.getByRole("combobox");
 
-      expect(currencyDropdown).toHaveValue("USD");
-      fireEvent.change(currencyDropdown, { target: { value: "EUR" } });
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: "currency/setCurrency",
-        payload: "EUR",
-      });
+  test("currency dropdown changes dispatch action", async () => {
+    renderSearchForm();
+    await waitFor(() => screen.getByRole("combobox"));
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "EUR" } });
+
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: "currency/setCurrency",
+      payload: "EUR",
     });
   });
 
-  test("shows loading spinner when loading is true", async () => {
-    const store = configureStore({
-      reducer: {
-        flights: flightsReducer,
-        currency: currencyReducer,
-      },
-      preloadedState: {
-          flights: {
-            flights: [],
-            message: "",
-            error: "",
-            loading: false,
-            alert: null,
-            searchData: {
-              selectedDate: "",
-              departureDate: "",
-              source: "",
-              destination: "",
-              travellersCount: 1,
-              classType: "Economy",
-            },
-          },
-          currency: {
-            currency: "USD",
-          },
-      },
-    });
-
-    const { rerender } = render(
-      <Provider store={store}>
-        <Search />
-      </Provider>
-    );
-
-    await act(async () => {
-      store.dispatch({ type: "flights/setError", payload: "" });
-      store.dispatch({ type: "currency/setCurrency", payload: "USD" });
-
-      rerender(
-        <Provider store={store}>
-          <Search />
-        </Provider>
-      );
-    });
-  });
-
-  test("dispatches error for invalid cities", async () => {
+  test("dispatches error if cities are invalid", async () => {
     renderSearchForm();
     await waitFor(() => screen.getByLabelText(/Source/i));
-    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
-      target: { value: "InvalidCity" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
-      target: { value: "Unknown" },
-    });
+
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "FakeCity" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "OtherFake" } });
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
+
     await waitFor(() =>
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "flights/setError", payload: "Please select valid cities." })
+        expect.objectContaining({
+          type: "departureFlights/setDepartureError",
+          payload: "Please select valid cities.",
+        })
       )
     );
   });
 
-  test("prevents form submission if source equals destination", async () => {
+  test("dispatches error if source and destination are same", async () => {
     renderSearchForm();
     await waitFor(() => screen.getByLabelText(/Source/i));
 
-    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
-      target: { value: "Delhi" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
-      target: { value: "Delhi" },
-    });
+    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "Delhi" } });
+    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "Delhi" } });
     fireEvent.click(screen.getByRole("button", { name: /Search/i }));
     await waitFor(() =>
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "flights/setError", payload: "Source and destination cannot be same" })
+        expect.objectContaining({
+          type: "departureFlights/setDepartureError",
+          payload: "Source and destination cannot be same",
+        })
       )
     );
   });
 
-  test("departure date changes correctly", async () => {
+  test("swaps source and destination correctly", async () => {
+    renderSearchForm();
+    await waitFor(() => screen.getByLabelText(/Source/i));
+
+    const sourceInput = screen.getByPlaceholderText(/Enter source/i);
+    const destinationInput = screen.getByPlaceholderText(/Enter destination/i);
+    const swapBtn = screen.getByAltText(/swap-icon/i);
+
+    fireEvent.change(sourceInput, { target: { value: "Mumbai" } });
+    fireEvent.change(destinationInput, { target: { value: "Delhi" } });
+    fireEvent.click(swapBtn);
+
+    expect(sourceInput).toHaveValue("Delhi");
+    expect(destinationInput).toHaveValue("Mumbai");
+  });
+
+  test("travellers count updates correctly within bounds", async () => {
+    renderSearchForm();
+
+    const minus = screen.getAllByRole("button").find((b) => b.textContent === "-")!;
+    const plus = screen.getAllByRole("button").find((b) => b.textContent === "+")!;
+    const input = screen.getByRole("spinbutton") as HTMLInputElement;
+
+    expect(input.value).toBe("1");
+    fireEvent.click(minus);
+    expect(input.value).toBe("1");
+
+    for (let i = 0; i < 5; i++) fireEvent.click(plus);
+    expect(input.value).toBe("6");
+
+    for (let i = 0; i < 5; i++) fireEvent.click(plus);
+    expect(input.value).toBe("9");
+
+    fireEvent.click(plus);
+    expect(input.value).toBe("9");
+  });
+
+  test("departure date changes and stays valid", async () => {
     renderSearchForm();
     const input = await screen.findByLabelText(/Departure Date/i);
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
     fireEvent.change(input, { target: { value: tomorrow } });
     expect(input).toHaveValue(tomorrow);
   });
 
-  test("updates class type selection", async () => {
+  test("class type updates correctly", async () => {
     renderSearchForm();
-    const classTypeInput = await screen.findByPlaceholderText(/Select class type/i);
-    fireEvent.change(classTypeInput, { target: { value: "First Class" } });
-    expect(classTypeInput).toHaveValue("First Class");
+    const input = await screen.findByPlaceholderText(/Select class type/i);
+    fireEvent.change(input, { target: { value: "First Class" } });
+    expect(input).toHaveValue("First Class");
   });
 
-  test("travellers count increases/decreases within bounds", async () => {
+  test("sets currency on geolocation detection", async () => {
     renderSearchForm();
-
-    const plus = screen.getAllByRole("button").find((btn) => btn.textContent === "+")!;
-    const minus = screen.getAllByRole("button").find((btn) => btn.textContent === "-")!;
-    const input = screen.getByRole("spinbutton") as HTMLInputElement;
-
-    expect(input.value).toBe("1");
-
-    await act(async () => {
-      fireEvent.click(minus);
-    });
-    expect(input.value).toBe("1");
-
-    await act(async () => {
-      fireEvent.click(plus);
-      fireEvent.click(plus);
-    });
-    expect(input.value).toBe("3");
-
-    await act(async () => {
-      for (let i = 0; i < 10; i++) fireEvent.click(plus);
-    });
-    expect(input.value).toBe("9");
-
-    await act(async () => {
-      fireEvent.click(plus);
-    });
-    expect(input.value).toBe("9");
-  });
-
-  test("swaps source and destination when swap icon is clicked", async () => {
-    renderSearchForm();
-    await waitFor(() => screen.getByLabelText(/Source/i));
-
-    fireEvent.change(screen.getByPlaceholderText(/Enter source/i), {
-      target: { value: "Delhi" },
-    });
-    fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), {
-      target: { value: "Mumbai" },
-    });
-
-    const swapIcon = screen.getByAltText(/swap-icon/i);
-    fireEvent.click(swapIcon);
-
-    expect(screen.getByPlaceholderText(/Enter source/i)).toHaveValue("Mumbai");
-    expect(screen.getByPlaceholderText(/Enter destination/i)).toHaveValue("Delhi");
-  });
-
-  test("handles fetch rejection during mount", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce("City fetch failed"));
-    renderSearchForm();
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Source/i)).toBeInTheDocument();
-    });
-  });
-
-  test("dispatches setCurrency on geolocation detection", async () => {
-    renderSearchForm();
-    await waitFor(() => {
+    await waitFor(() =>
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({ type: "currency/setCurrency", payload: "INR" })
-      );
-    });
+      )
+    );
+  });
+
+  test("handles failed city fetch gracefully", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce("Failed to fetch cities"));
+    renderSearchForm();
+    await waitFor(() => screen.getByLabelText(/Source/i));
   });
 });

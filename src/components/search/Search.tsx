@@ -5,9 +5,6 @@ import swapIcon from '../../assets/swap.png';
 import { useFetchFlights } from "../../hooks/useFetchFlights";
 import { setCurrency } from "../../redux/currencySlice";
 import {
-  clearFlights,
-  setError,
-  setMessage,
   setSearchData,
 } from "../../redux/flightsSlice";
 import type { RootState } from "../../redux/store";
@@ -15,20 +12,20 @@ import { detectCurrency, supportedCurrencies } from "../../utils/currencyUtils";
 import { InputDropdown } from "../input_dropdown/InputDropdown";
 import { LoadingSpinner } from "../LoadingSpinner/LoadingSpinner";
 import "./Search.css";
+import { clearDepartureFlights, setDepartureError, setDepartureMessage } from "../../redux/departureFlightsSlice";
 
 
 
 export const Search = () => {
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
-  const [departureDate, setDepartureDate] = useState(
-    new Date().toLocaleDateString("en-CA")
-  );
+  const [departureDate, setDepartureDate] = useState( new Date().toLocaleDateString("en-CA") );
   const [travellersCount, setTravellersCount] = useState(1);
   const [classType, setClassType] = useState("Economy");
   const [cities, setCities] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const {currency} = useSelector((state: RootState) => state.currency)
+
 
 
   const dispatch = useDispatch();
@@ -76,8 +73,8 @@ export const Search = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(setMessage(""));
-    dispatch(setError(""));
+    dispatch(setDepartureMessage(""));
+    dispatch(setDepartureError(""));
     setLoading(true);
 
     const matchedSource = cities.find(
@@ -88,16 +85,16 @@ export const Search = () => {
     );
 
     if (!matchedSource || !matchedDestination) {
-      dispatch(clearFlights());
+      dispatch(clearDepartureFlights());
       setLoading(false);
-      dispatch(setError("Please select valid cities."));
+      dispatch(setDepartureError("Please select valid cities."));
       return;
     }
 
     if (matchedSource === matchedDestination) {
-      dispatch(clearFlights());
+      dispatch(clearDepartureFlights());
       setLoading(false);
-      dispatch(setError("Source and destination cannot be same"));
+      dispatch(setDepartureError("Source and destination cannot be same"));
       return;
     }
 

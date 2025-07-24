@@ -1,13 +1,32 @@
-import { configureStore } from "@reduxjs/toolkit";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { clearFlights, flightsReducer, setAlert } from "../../redux/flightsSlice";
+
 import { ConfirmBooking } from "./ConfirmBooking";
+import { setAlert } from "../../redux/flightsSlice";
+import { clearDepartureFlights } from "../../redux/departureFlightsSlice";
+import { store } from "../../redux/store";
 
 const mockDispatch = vi.fn();
 const mockNavigate = vi.fn();
+
+const mockFlight = {
+  flight_number: "AI101",
+  airline_name: "Air India",
+  departure_time: "10:00",
+  arrival_time: "12:30",
+  arrival_date_difference: "",
+  source: "Delhi",
+  destination: "Mumbai",
+  departure_date: "2025-08-01",
+  arrival_date: "2025-08-01",
+  seats: 5,
+  price: 5000,
+  base_price: 4500,
+  travellers_count: 2,
+  class_type: "Economy",
+};
 
 vi.mock("react-redux", async () => {
   const actual = await vi.importActual<typeof import("react-redux")>("react-redux");
@@ -27,54 +46,17 @@ vi.mock("react-router-dom", async () => {
         price: 5000,
         basePrice: 4500,
         symbol: "₹",
+        currency: "INR",
       },
     }),
     useNavigate: () => mockNavigate,
   };
 });
 
-const mockFlight = {
-  flight_number: "AI101",
-  airline_name: "Air India",
-  departure_time: "10:00",
-  arrival_time: "12:30",
-  arrival_date_difference: "",
-  source: "Delhi",
-  destination: "Mumbai",
-  departure_date: "2025-08-01",
-  arrival_date: "2025-08-01",
-  seats: 5,
-  price: 5000,
-  base_price: 4500,
-  travellers_count: 2,
-  class_type: "Economy",
-};
-
-const createMockStore = () =>
-  configureStore({
-    reducer: { flights: flightsReducer },
-    preloadedState: {
-      flights: {
-        flights: [],
-        message: "",
-        alert: null,
-        error: '',
-        loading: false,
-        searchData: {
-          selectedDate: new Date().toISOString().split("T")[0],
-          departureDate: new Date().toISOString().split("T")[0],
-          source: "",
-          destination: "",
-          travellersCount: 1,
-          classType: "Economy",
-        },
-      },
-    },
-  });
 
 const renderConfirmBooking = () => {
   return render(
-    <Provider store={createMockStore()}>
+    <Provider store={store}>
       <MemoryRouter initialEntries={["/confirm-booking"]}>
         <Routes>
           <Route path="/" element={<div>Home Page</div>} />
@@ -92,7 +74,7 @@ describe("ConfirmBooking Component", () => {
     mockNavigate.mockClear();
   });
 
-  test("renders flight details and fare summary", async () => {
+  test("renders flight details and fare summary", () => {
     renderConfirmBooking();
 
     expect(screen.getByText("Confirm Your Flight")).toBeInTheDocument();
@@ -100,9 +82,10 @@ describe("ConfirmBooking Component", () => {
     expect(screen.getByText("Base Fare")).toBeInTheDocument();
     expect(screen.getByText("Taxes & Fees")).toBeInTheDocument();
     expect(screen.getByText("Total")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Confirm Booking/i })).toBeInTheDocument();
   });
 
-  test("successful booking dispatches success alert and clears flights", async () => {
+  test("successful booking dispatches success alert and clears departure flights", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ message: "Booking successful" }),
@@ -119,7 +102,7 @@ describe("ConfirmBooking Component", () => {
           message: "🎉 Booking confirmed successfully!",
         })
       );
-      expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
+      expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
@@ -141,7 +124,7 @@ describe("ConfirmBooking Component", () => {
           message: "❌ Booking failed",
         })
       );
-      expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
+      expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
@@ -160,7 +143,7 @@ describe("ConfirmBooking Component", () => {
           message: "❌ Network error. Please try again.",
         })
       );
-      expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
+      expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });

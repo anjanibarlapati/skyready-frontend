@@ -1,15 +1,16 @@
 
 import { useDispatch } from "react-redux";
-import { clearFlights, setError, setFlights, setMessage, type SearchData } from "../redux/flightsSlice";
+import { type SearchData } from "../redux/flightsSlice";
+import { clearDepartureFlights, setDepartureError, setDepartureFlights, setDepartureMessage } from "../redux/departureFlightsSlice";
 
 export const useFetchFlights = () => {
   const dispatch = useDispatch();
 
   const fetchFlights = async (searchData: SearchData) => {
     try {
-      dispatch(clearFlights());
-      dispatch(setMessage(""));
-      dispatch(setError(""));
+      dispatch(clearDepartureFlights());
+      dispatch(setDepartureMessage(""));
+      dispatch(setDepartureError(""));
       const response = await fetch(
         `${import.meta.env.VITE_BASE_URL}/api/v1/flights/search`,
         {
@@ -30,16 +31,16 @@ export const useFetchFlights = () => {
       const result = await response.json();
 
       if (response.ok) {
-        dispatch(setFlights(result.flights));
+        dispatch(setDepartureFlights(result.flights));
       } else {
         if ( response.status === 409 ) {
-          dispatch(setMessage(result.message || "No flights found"));
+          dispatch(setDepartureMessage(result.message || "No flights found"));
         } else {
-          dispatch(setError(result.message || "Failed to fetch flights"));
+          dispatch(setDepartureError(result.message || "Failed to fetch flights"));
         }
       }
     } catch {
-      dispatch(setError("Something went wrong while fetching flights"));
+      dispatch(setDepartureError("Something went wrong while fetching flights"));
     } finally {
        document.getElementById('flight-results')?.scrollIntoView({ behavior: 'smooth' });
     }

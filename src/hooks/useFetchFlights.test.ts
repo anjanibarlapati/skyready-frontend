@@ -1,12 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import {
-  setFlights,
-  setError,
-  setMessage,
-  clearFlights,
 } from "../redux/flightsSlice";
 import { useFetchFlights } from "./useFetchFlights";
+import { clearDepartureFlights, setDepartureError, setDepartureFlights, setDepartureMessage } from "../redux/departureFlightsSlice";
 
 const mockDispatch = vi.fn();
 
@@ -64,13 +61,13 @@ describe("useFetchFlights hook", () => {
       await result.current.fetchFlights(searchData);
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
-    expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setError(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setFlights(fakeFlights));
+    expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureMessage(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureError(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureFlights(fakeFlights));
   });
 
-  test("handles 409 response (no flights on date) and dispatches setMessage", async () => {
+  test("handles 409 response (no flights on date) and dispatches setDepartureMessage", async () => {
     const errorMessage = "No flights available on the selected date";
 
     globalThis.fetch = vi.fn().mockResolvedValue({
@@ -85,13 +82,13 @@ describe("useFetchFlights hook", () => {
       await result.current.fetchFlights(searchData);
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
-    expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setError(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setMessage(errorMessage));
+    expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureMessage(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureError(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureMessage(errorMessage));
   });
 
-  test("handles other non-ok responses and dispatches setError", async () => {
+  test("handles other non-ok responses and dispatches setDepartureError", async () => {
     const errorMessage = "Internal server error";
 
     globalThis.fetch = vi.fn().mockResolvedValue({
@@ -106,13 +103,13 @@ describe("useFetchFlights hook", () => {
       await result.current.fetchFlights(searchData);
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
-    expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setError(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setError(errorMessage));
+    expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureMessage(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureError(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureError(errorMessage));
   });
 
-  test("handles fetch network failure and dispatches default setError", async () => {
+  test("handles fetch network failure and dispatches default setDepartureError", async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"));
 
     const { result } = renderHook(() => useFetchFlights());
@@ -121,11 +118,11 @@ describe("useFetchFlights hook", () => {
       await result.current.fetchFlights(searchData);
     });
 
-    expect(mockDispatch).toHaveBeenCalledWith(clearFlights());
-    expect(mockDispatch).toHaveBeenCalledWith(setMessage(""));
-    expect(mockDispatch).toHaveBeenCalledWith(setError(""));
+    expect(mockDispatch).toHaveBeenCalledWith(clearDepartureFlights());
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureMessage(""));
+    expect(mockDispatch).toHaveBeenCalledWith(setDepartureError(""));
     expect(mockDispatch).toHaveBeenCalledWith(
-      setError("Something went wrong while fetching flights")
+      setDepartureError("Something went wrong while fetching flights")
     );
   });
 });
