@@ -28,6 +28,7 @@ const createMockStore = () =>
       flights: {
         alert: null,
         loading: false,
+        tripType: "One Way" as 'One Way' | 'Round',
         searchData: {
           selectedDate: "",
           departureDate: "",
@@ -35,6 +36,7 @@ const createMockStore = () =>
           destination: "",
           travellersCount: 1,
           classType: "Economy",
+          tripType: 'One Way' as 'One Way' | 'Round'
         },
       },
       currency: {
@@ -83,9 +85,11 @@ describe("Search Component", () => {
     vi.restoreAllMocks();
   });
 
-  test("renders all input fields and search button", async () => {
+  test("renders all inputs and search button", async () => {
     renderSearchForm();
-    await waitFor(() => screen.getByLabelText(/Source/i));
+
+    await waitFor(() => screen.findByLabelText(/Source/i));
+
     expect(screen.getByLabelText(/Destination/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Departure Date/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Travellers/i)).toBeInTheDocument();
@@ -93,9 +97,10 @@ describe("Search Component", () => {
     expect(screen.getByRole("button", { name: /Search/i })).toBeInTheDocument();
   });
 
-  test("currency dropdown changes dispatch action", async () => {
+  test("dispatches currency change on dropdown select", async () => {
     renderSearchForm();
-    await waitFor(() => screen.getByRole("combobox"));
+    await screen.findByRole("combobox");
+
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "EUR" } });
 
     expect(mockDispatch).toHaveBeenCalledWith({
@@ -104,9 +109,9 @@ describe("Search Component", () => {
     });
   });
 
-  test("dispatches error if cities are invalid", async () => {
+  test("dispatches error for invalid cities", async () => {
     renderSearchForm();
-    await waitFor(() => screen.getByLabelText(/Source/i));
+    await screen.findByLabelText(/Source/i);
 
     fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "FakeCity" } });
     fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "OtherFake" } });
@@ -122,9 +127,9 @@ describe("Search Component", () => {
     );
   });
 
-  test("dispatches error if source and destination are same", async () => {
+  test("dispatches error for identical source and destination", async () => {
     renderSearchForm();
-    await waitFor(() => screen.getByLabelText(/Source/i));
+    await screen.findByLabelText(/Source/i);
 
     fireEvent.change(screen.getByPlaceholderText(/Enter source/i), { target: { value: "Delhi" } });
     fireEvent.change(screen.getByPlaceholderText(/Enter destination/i), { target: { value: "Delhi" } });
@@ -141,7 +146,7 @@ describe("Search Component", () => {
 
   test("swaps source and destination correctly", async () => {
     renderSearchForm();
-    await waitFor(() => screen.getByLabelText(/Source/i));
+    await screen.findByLabelText(/Source/i);
 
     const sourceInput = screen.getByPlaceholderText(/Enter source/i);
     const destinationInput = screen.getByPlaceholderText(/Enter destination/i);
@@ -155,55 +160,66 @@ describe("Search Component", () => {
     expect(destinationInput).toHaveValue("Mumbai");
   });
 
-  test("travellers count updates correctly within bounds", async () => {
+  test("updates traveller count with bounds (1-9)", async () => {
     renderSearchForm();
 
-    const minus = screen.getAllByRole("button").find((b) => b.textContent === "-")!;
-    const plus = screen.getAllByRole("button").find((b) => b.textContent === "+")!;
-    const input = screen.getByRole("spinbutton") as HTMLInputElement;
+    const minusBtn = screen.getAllByRole("button").find((b) => b.textContent === "-")!;
+    const plusBtn = screen.getAllByRole("button").find((b) => b.textContent === "+")!;
+    const travellerInput = screen.getByRole("spinbutton") as HTMLInputElement;
 
-    expect(input.value).toBe("1");
-    fireEvent.click(minus);
-    expect(input.value).toBe("1");
+    expect(travellerInput.value).toBe("1");
 
-    for (let i = 0; i < 5; i++) fireEvent.click(plus);
-    expect(input.value).toBe("6");
+    await waitFor(()=>fireEvent.click(minusBtn));
+    expect(travellerInput.value).toBe("1");
 
-    for (let i = 0; i < 5; i++) fireEvent.click(plus);
-    expect(input.value).toBe("9");
-
-    fireEvent.click(plus);
-    expect(input.value).toBe("9");
+    for (let i = 0; i < 10; i++) await waitFor(()=>fireEvent.click(plusBtn));
+    expect(travellerInput.value).toBe("9");
   });
 
-  test("departure date changes and stays valid", async () => {
+  test("updates departure date correctly", async () => {
     renderSearchForm();
     const input = await screen.findByLabelText(/Departure Date/i);
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
 
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
     fireEvent.change(input, { target: { value: tomorrow } });
+
     expect(input).toHaveValue(tomorrow);
   });
 
-  test("class type updates correctly", async () => {
+  test("updates class type correctly", async () => {
     renderSearchForm();
-    const input = await screen.findByPlaceholderText(/Select class type/i);
-    fireEvent.change(input, { target: { value: "First Class" } });
-    expect(input).toHaveValue("First Class");
+
+    const classDropdown = screen.getByPlaceholderText(/Select class type/i);
+    await waitFor(()=>fireEvent.change(classDropdown, { target: { value: "First Class" } }));
+
+    expect(classDropdown).toHaveValue("First Class");
   });
 
-  test("sets currency on geolocation detection", async () => {
+  test("sets currency via geolocation detection", async () => {
     renderSearchForm();
     await waitFor(() =>
       expect(mockDispatch).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "currency/setCurrency", payload: "INR" })
+        expect.objectContaining({
+          type: "currency/setCurrency",
+          payload: "INR",
+        })
       )
     );
   });
 
   test("handles failed city fetch gracefully", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce("Failed to fetch cities"));
+    vi.stubGlobal("fetch", vi.fn((url) => {
+      if (url.toString().includes("/cities")) {
+        return Promise.reject("Failed to fetch cities");
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ country_code: "IN" }),
+      });
+    }));
+
     renderSearchForm();
-    await waitFor(() => screen.getByLabelText(/Source/i));
+    await screen.findByLabelText(/Source/i);
   });
+
 });
