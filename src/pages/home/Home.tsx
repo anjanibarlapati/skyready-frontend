@@ -6,7 +6,7 @@ import "./Home.css";
 import type { RootState } from "../../redux/store";
 import { type Flight, FlightResult } from "../../components/flight_result/FlightResult";
 import { useEffect, useState } from "react";
-import { clearAlert } from "../../redux/flightsSlice";
+import { clearAlert, setAlert } from "../../redux/flightsSlice";
 import { DateNavigator } from "../../components/DateNavigator/DateNavigator";
 import { LoadingSpinner } from "../../components/LoadingSpinner/LoadingSpinner";
 import { convertFromINR, getCurrencySymbol } from "../../utils/currencyUtils";
@@ -30,14 +30,8 @@ export const Home = () => {
   useEffect(() => {
     if (alert?.message) {
       setShowBookingAlert(true);
-      const timer = setTimeout(() => {
-        setShowBookingAlert(false);
-        dispatch(clearAlert());
-      }, 3000);
-
-      return () => clearTimeout(timer);
     }
-  }, [alert, dispatch]);
+  }, [alert]);
 
 
   const handleDepartureFlight = (flight: Flight) =>{
@@ -59,6 +53,11 @@ export const Home = () => {
 
   const handleBook = async () =>{
       if(!departureFlight || !returnFlight){
+        return;
+      }
+
+      if ((new Date(searchData.returnDate!) < new Date(searchData.departureDate)) || (departureFlight.arrival_time >= returnFlight.departure_time)) {
+        dispatch(setAlert({ type: "failure", message: "Return flight cannot be before departure flight" }));
         return;
       }
       const convertedPrice = convertFromINR(departureFlight.price, currency);
@@ -86,8 +85,16 @@ export const Home = () => {
   return (
     <div className="home-container">
       {showBookingAlert && (
-        <div className={`alert ${alert?.type === 'success' ? 'alert-success': 'alert-failure'}`}>
-          {alert?.message}
+        <div className="modal-overlay">
+          <div className={`modal-content`}>
+            <p>{alert?.message}</p>
+            <button className={`modal-content-button ${alert?.type === "success" ? "success" : "failure"}`} onClick={() => {
+              setShowBookingAlert(false);
+              dispatch(clearAlert());
+            }}>
+              OK
+            </button>
+          </div>
         </div>
       )}
       <ImageSlider/>
