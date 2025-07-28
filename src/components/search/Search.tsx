@@ -215,14 +215,14 @@ export const Search = () => {
                 </div>
 
                 {tripType ==='Round' && <div className="input-field">
-                  <label htmlFor="departureDate">Return Date</label>
+                  <label htmlFor="returnDate">Return Date</label>
                   <input
                     type="date"
                     id="returnDate"
                     name="returnDate"
                     className="date-picker"
                     value={returnDate}
-                    min={new Date().toLocaleDateString("en-CA")}
+                    min={departureDate}
                     max={
                       new Date(new Date().setMonth(new Date().getMonth() + 2)).toLocaleDateString("en-CA")}
                     onChange={(e) => setReturnDate(e.target.value)}
