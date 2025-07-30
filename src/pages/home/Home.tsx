@@ -56,7 +56,7 @@ export const Home = () => {
         return;
       }
 
-      if ((new Date(searchData.returnDate!) < new Date(searchData.departureDate)) || (departureFlight.arrival_time >= returnFlight.departure_time)) {
+      if (!((new Date(searchData.returnDate!) > new Date(searchData.departureDate)) && (departureFlight.arrival_time < returnFlight.departure_time))) {
         dispatch(setAlert({ type: "failure", message: "Return flight cannot be before departure flight" }));
         return;
       }
