@@ -10,6 +10,14 @@ import { flightsReducer, type Alert } from '../../redux/flightsSlice';
 import { returnFlightsReducer } from '../../redux/returnFlightsSlice';
 import { Home } from './Home';
 
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  };
+});
+
 const createMockFlight = (overrides?: Partial<Flight>): Flight => ({
   airline_name: 'Air India',
   flight_number: 'AI101',
@@ -198,5 +206,99 @@ describe('Home Component', () => {
     const bookButton = screen.getByRole('button', { name: /Book/i });
     expect(bookButton).toBeDisabled();
   });
+
+  test('shows booking alert modal when alert is present', async () => {
+    await renderHomeWithState({
+      alert: { type: 'success', message: 'Test alert message' },
+      departureFlights: [],
+      returnFlights: [],
+    });
+
+    expect(screen.getByText(/Test alert message/i)).toBeInTheDocument();
+    const okButton = screen.getByRole('button', { name: /OK/i });
+    fireEvent.click(okButton);
+    expect(screen.queryByText(/Test alert message/i)).not.toBeInTheDocument();
+  });
+
+  test('toggles selection of a departure flight', async () => {
+    const depFlight = createMockFlight({ flight_number: 'AI101' });
+
+    await renderHomeWithState({
+      departureFlights: [depFlight],
+      returnFlights: [createMockFlight({ flight_number: 'AI102', source: 'Mumbai', destination: 'Delhi' })],
+    });
+
+    const flightElement = screen.getByText(/Air India/i);
+    fireEvent.click(flightElement);
+    fireEvent.click(flightElement);
+  });
+
+  test('toggles selection of a return flight', async () => {
+    const retFlight = createMockFlight({ flight_number: 'AI102', source: 'Mumbai', destination: 'Delhi' });
+
+    await renderHomeWithState({
+      departureFlights: [createMockFlight()],
+      returnFlights: [retFlight],
+    });
+
+    const bomTabs = screen.getAllByText(/BOM/);
+    fireEvent.click(bomTabs[1]);
+
+    const returnFlight = screen.getByText(/Air India/i);
+    fireEvent.click(returnFlight);
+    fireEvent.click(returnFlight);
+  });
+
+  test('shows alert if return flight is before departure flight', async () => {
+    const depFlight = createMockFlight({
+      flight_number: 'AI101',
+      departure_time: '10:00',
+      arrival_time: '12:00',
+      departure_date: '2025-07-20',
+    });
+
+    const retFlight = createMockFlight({
+      flight_number: 'AI102',
+      source: 'Mumbai',
+      destination: 'Delhi',
+      departure_time: '11:00',
+      arrival_time: '13:00',
+      departure_date: '2025-07-18',
+    });
+
+    await renderHomeWithState({
+      departureFlights: [depFlight],
+      returnFlights: [retFlight],
+    });
+
+    const flightElement1 = screen.getByText(/Air India/i);
+    fireEvent.click(flightElement1);
+
+    const bomTabs = screen.getAllByText(/BOM/);
+    fireEvent.click(bomTabs[1]);
+
+    const flightElement2 = screen.getByText(/Air India/i);
+    fireEvent.click(flightElement2);
+
+    const bookButton = screen.getByRole('button', { name: /Book/i });
+    fireEvent.click(bookButton);
+
+    expect(await screen.findByText(/Return flight cannot be before departure flight/i)).toBeInTheDocument();
+  });
+
+  test('shows return message when no return flights', async () => {
+    await renderHomeWithState({
+      departureFlights: [createMockFlight()],
+      returnFlights: [],
+      returnMessage: 'No return flights found',
+    });
+
+    const returnTab = screen.getAllByText(/BOM/)[1];
+    fireEvent.click(returnTab);
+
+    expect(screen.getByText(/No return flights found/i)).toBeInTheDocument();
+  });
+
+  
 
 });
