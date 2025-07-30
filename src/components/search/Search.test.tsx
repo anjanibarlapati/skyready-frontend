@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { Search } from "./Search";
@@ -247,7 +247,9 @@ describe("Search Component", () => {
   });
 
   test("disables minus button when traveller count is 1", async () => {
-    renderSearchForm();
+     await act(async () => {
+      renderSearchForm();
+    });
     const minusBtn = screen.getAllByRole("button").find((b) => b.textContent === "-");
 
     expect(minusBtn).toBeDisabled();
