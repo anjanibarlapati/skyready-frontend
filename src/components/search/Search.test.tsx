@@ -222,4 +222,35 @@ describe("Search Component", () => {
     await screen.findByLabelText(/Source/i);
   });
 
+  test("ensures return date cannot be before departure date", async () => {
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
+    const store = createMockStore();
+    store.dispatch({ type: "flights/setTripType", payload: "Round" });
+
+    render(
+      <Provider store={store}>
+        <Search />
+      </Provider>
+    );
+
+    await screen.findByLabelText(/Return Date/i);
+
+    const departureInput = screen.getByLabelText(/Departure Date/i);
+    const returnInput = screen.getByLabelText(/Return Date/i);
+
+    fireEvent.change(departureInput, { target: { value: tomorrow } });
+
+    await waitFor(() => {
+      expect(returnInput).toHaveAttribute("min", tomorrow);
+    });
+  });
+
+  test("disables minus button when traveller count is 1", async () => {
+    renderSearchForm();
+    const minusBtn = screen.getAllByRole("button").find((b) => b.textContent === "-");
+
+    expect(minusBtn).toBeDisabled();
+  });
+
 });
